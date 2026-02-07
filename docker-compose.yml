@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  # CPU-only deployment (default)
+  tts-api:
+    build:
+      context: .
+      target: runtime-cpu
+    container_name: tts-service
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=TTS Service
+      - DEBUG=false
+      - TTS_MODEL=kokoro
+      - DEFAULT_VOICE=af_heart
+      - SAMPLE_RATE=24000
+      - DEFAULT_FORMAT=mp3
+      - MAX_TEXT_LENGTH=5000
+      - CACHE_ENABLED=true
+    volumes:
+      - ./models:/app/models
+      - ./cache:/app/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # GPU deployment (uncomment to use)
+  # tts-api-gpu:
+  #   build:
+  #     context: .
+  #     target: runtime-gpu
+  #   container_name: tts-service-gpu
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - APP_NAME=TTS Service
+  #     - DEBUG=false
+  #     - TTS_MODEL=kokoro
+  #     - DEFAULT_VOICE=af_heart
+  #     - CUDA_VISIBLE_DEVICES=0
+  #   volumes:
+  #     - ./models:/app/models
+  #     - ./cache:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   restart: unless-stopped

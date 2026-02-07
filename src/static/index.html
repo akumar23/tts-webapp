@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Service</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .settings-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--border);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .provider-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .provider-card:hover {
+            border-color: var(--accent);
+        }
+
+        .provider-card.selected {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .provider-card.needs-key {
+            opacity: 0.6;
+        }
+
+        .provider-card.needs-key.has-key {
+            opacity: 1;
+        }
+
+        .provider-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .provider-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .provider-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .badge-free {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .badge-api {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-configured {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .speed-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .audio-player {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        .audio-player.visible {
+            display: block;
+        }
+
+        .audio-player audio {
+            width: 100%;
+        }
+
+        .audio-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .status {
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .status.loading { display: block; background: rgba(99, 102, 241, 0.1); color: var(--accent); }
+        .status.error { display: block; background: rgba(239, 68, 68, 0.1); color: var(--error); }
+        .status.success { display: block; background: rgba(34, 197, 94, 0.1); color: var(--success); }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .api-key-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        .api-key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .api-key-title {
+            font-weight: 600;
+        }
+
+        .api-key-link {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .api-key-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .api-key-input-group input {
+            flex: 1;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+            border: none;
+        }
+
+        .key-status {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .key-status.saved {
+            color: var(--success);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            .controls-row { grid-template-columns: 1fr; }
+            .provider-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Text to Speech</h1>
+            </div>
+            <button class="settings-btn" id="settingsBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Settings
+            </button>
+        </header>
+
+        <main>
+            <!-- Provider Selection -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">TTS Provider</span>
+                </div>
+                <div class="provider-grid" id="providerGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Text Input -->
+            <div class="card">
+                <div class="form-group">
+                    <label for="text">Enter Text</label>
+                    <textarea id="text" placeholder="Type or paste your text here...">Hello! Welcome to the multi-provider text-to-speech service. Choose a provider above and start generating speech.</textarea>
+                </div>
+
+                <div class="controls-row">
+                    <div class="form-group">
+                        <label for="voice">Voice</label>
+                        <select id="voice">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="format">Format</label>
+                        <select id="format">
+                            <option value="mp3">MP3</option>
+                            <option value="wav">WAV</option>
+                            <option value="ogg">OGG</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Speed</label>
+                        <div class="speed-control">
+                            <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1">
+                            <span class="speed-value" id="speedValue">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="synthesizeBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Generate Speech
+                </button>
+
+                <div class="status" id="status"></div>
+
+                <div class="audio-player" id="audioPlayer">
+                    <audio id="audio" controls></audio>
+                    <div class="audio-meta">
+                        <span id="audioInfo"></span>
+                        <span id="processingTime"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <a href="/docs" target="_blank">API Docs</a> |
+            <a href="/v1/tts/providers" target="_blank">Providers</a>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">API Settings</span>
+                <button class="modal-close" id="closeSettings">&times;</button>
+            </div>
+            <div id="apiKeySettings">
+                <!-- Populated by JS -->
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
+                API keys are stored locally in your browser and sent directly to the providers.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        // State
+        let providers = [];
+        let selectedProvider = 'edge';
+        let apiKeys = JSON.parse(localStorage.getItem('tts_api_keys') || '{}');
+
+        // Elements
+        const providerGrid = document.getElementById('providerGrid');
+        const voiceSelect = document.getElementById('voice');
+        const formatSelect = document.getElementById('format');
+        const speedInput = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        const textInput = document.getElementById('text');
+        const synthesizeBtn = document.getElementById('synthesizeBtn');
+        const status = document.getElementById('status');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audio = document.getElementById('audio');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettings = document.getElementById('closeSettings');
+        const apiKeySettings = document.getElementById('apiKeySettings');
+
+        // Load providers
+        async function loadProviders() {
+            try {
+                const response = await fetch(`${API_BASE}/v1/tts/providers`);
+                providers = await response.json();
+                renderProviders();
+                loadVoices();
+            } catch (error) {
+                console.error('Failed to load providers:', error);
+            }
+        }
+
+        function renderProviders() {
+            providerGrid.innerHTML = providers.map(p => {
+                const hasKey = !!apiKeys[p.id];
+                const needsKey = p.requires_api_key;
+                const isSelected = p.id === selectedProvider;
+
+                let badge = '';
+                if (!needsKey) {
+                    badge = '<span class="provider-badge badge-free">Free</span>';
+                } else if (hasKey) {
+                    badge = '<span class="provider-badge badge-configured">Configured</span>';
+                } else {
+                    badge = '<span class="provider-badge badge-api">API Key</span>';
+                }
+
+                return `
+                    <div class="provider-card ${isSelected ? 'selected' : ''} ${needsKey ? 'needs-key' : ''} ${hasKey ? 'has-key' : ''}"
+                         data-provider="${p.id}">
+                        <div class="provider-name">${p.name}</div>
+                        <div class="provider-desc">${p.description.split(' - ')[0]}</div>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            document.querySelectorAll('.provider-card').forEach(card => {
+                card.addEventListener('click', () => selectProvider(card.dataset.provider));
+            });
+        }
+
+        function selectProvider(providerId) {
+            const provider = providers.find(p => p.id === providerId);
+            if (provider?.requires_api_key && !apiKeys[providerId]) {
+                // Open settings if API key needed
+                openSettings();
+                return;
+            }
+
+            selectedProvider = providerId;
+            renderProviders();
+            loadVoices();
+        }
+
+        async function loadVoices() {
+            try {
+                const apiKey = apiKeys[selectedProvider] || '';
+                const url = `${API_BASE}/v1/tts/voices?provider=${selectedProvider}${apiKey ? '&api_key=' + encodeURIComponent(apiKey) : ''}`;
+                const response = await fetch(url);
+                const voices = await response.json();
+
+                voiceSelect.innerHTML = voices.map((v, i) =>
+                    `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language}${v.gender ? ', ' + v.gender : ''})</option>`
+                ).join('');
+            } catch (error) {
+                voiceSelect.innerHTML = '<option value="">No voices available</option>';
+            }
+        }
+
+        function openSettings() {
+            renderApiKeySettings();
+            settingsModal.classList.add('visible');
+        }
+
+        function closeSettingsModal() {
+            settingsModal.classList.remove('visible');
+        }
+
+        function renderApiKeySettings() {
+            apiKeySettings.innerHTML = providers
+                .filter(p => p.requires_api_key)
+                .map(p => {
+                    const hasKey = !!apiKeys[p.id];
+                    return `
+                        <div class="api-key-section">
+                            <div class="api-key-header">
+                                <span class="api-key-title">${p.name}</span>
+                                ${p.api_key_url ? `<a href="${p.api_key_url}" target="_blank" class="api-key-link">Get API Key →</a>` : ''}
+                            </div>
+                            <div class="api-key-input-group">
+                                <input type="password"
+                                       id="key-${p.id}"
+                                       placeholder="Enter API key..."
+                                       value="${apiKeys[p.id] || ''}">
+                                <button class="btn btn-small ${hasKey ? 'btn-danger' : 'btn-success'}"
+                                        onclick="${hasKey ? `removeKey('${p.id}')` : `saveKey('${p.id}')`}">
+                                    ${hasKey ? 'Remove' : 'Save'}
+                                </button>
+                            </div>
+                            ${hasKey ? '<div class="key-status saved">✓ Key saved</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function saveKey(providerId) {
+            const input = document.getElementById(`key-${providerId}`);
+            const key = input.value.trim();
+            if (key) {
+                apiKeys[providerId] = key;
+                localStorage.setItem('tts_api_keys', JSON.stringify(apiKeys));
+                renderApiKeySettings();
+                renderProviders();
+            }
+        }
+
+        function removeKey(providerId) {
+            delete apiKeys[providerId];
+            localStorage.setItem('tts_api_keys', JSON.stringify(apiKeys));
+            renderApiKeySettings();
+            renderProviders();
+            if (selectedProvider === providerId) {
+                selectedProvider = 'edge';
+                renderProviders();
+                loadVoices();
+            }
+        }
+
+        // Synthesis
+        async function synthesize() {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus('Please enter some text', 'error');
+                return;
+            }
+
+            const provider = providers.find(p => p.id === selectedProvider);
+            if (provider?.requires_api_key && !apiKeys[selectedProvider]) {
+                showStatus('API key required. Click Settings to configure.', 'error');
+                return;
+            }
+
+            synthesizeBtn.disabled = true;
+            synthesizeBtn.innerHTML = '<span class="spinner"></span> Generating...';
+            hideStatus();
+            audioPlayer.classList.remove('visible');
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/v1/tts/synthesize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        provider: selectedProvider,
+                        voice: voiceSelect.value,
+                        speed: parseFloat(speedInput.value),
+                        format: formatSelect.value,
+                        api_key: apiKeys[selectedProvider] || null,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Synthesis failed');
+                }
+
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+
+                const clientTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                const duration = response.headers.get('X-Audio-Duration-Seconds') || '?';
+                const providerUsed = response.headers.get('X-Provider') || selectedProvider;
+
+                audio.src = audioUrl;
+                audioPlayer.classList.add('visible');
+
+                document.getElementById('audioInfo').textContent = `${duration}s • ${providerUsed}`;
+                document.getElementById('processingTime').textContent = `${clientTime}s`;
+
+                showStatus('Speech generated!', 'success');
+                audio.play().catch(() => {});
+
+            } catch (error) {
+                showStatus(error.message, 'error');
+            } finally {
+                synthesizeBtn.disabled = false;
+                synthesizeBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Generate Speech
+                `;
+            }
+        }
+
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function hideStatus() {
+            status.className = 'status';
+        }
+
+        // Event listeners
+        speedInput.addEventListener('input', () => {
+            speedValue.textContent = `${speedInput.value}x`;
+        });
+
+        synthesizeBtn.addEventListener('click', synthesize);
+        settingsBtn.addEventListener('click', openSettings);
+        closeSettings.addEventListener('click', closeSettingsModal);
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettingsModal();
+        });
+
+        textInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') synthesize();
+        });
+
+        // Initialize
+        loadProviders();
+    </script>
+</body>
+</html>

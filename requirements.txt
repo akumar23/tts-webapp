@@ -1,0 +1,24 @@
+# Core Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# TTS Engine - Edge TTS (Microsoft's free neural TTS)
+edge-tts>=7.0.0
+
+# HTTP client for API providers
+httpx>=0.28.0
+
+# Audio Processing
+soundfile>=0.12.1
+numpy>=1.26.0
+
+# Async Support
+aiofiles>=23.2.1
+python-multipart>=0.0.6
+
+# Monitoring
+prometheus-fastapi-instrumentator>=6.1.0
+structlog>=24.1.0
+
