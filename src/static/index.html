@@ -3,519 +3,1739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTS Service</title>
+    <meta name="description" content="Text-to-Speech service with karaoke-style book reading">
+    <meta name="theme-color" content="#0f0f0f">
+    <title>TTS Service - Text to Speech</title>
+
+    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
+        /* ========================================
+           CSS Custom Properties (Design Tokens)
+           ======================================== */
         :root {
-            --bg-primary: #0f0f0f;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #252525;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent: #6366f1;
-            --accent-hover: #818cf8;
+            /* Colors - Dark Theme */
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-tertiary: #27272a;
+            --bg-elevated: #3f3f46;
+
+            /* Glass effect backgrounds */
+            --glass-bg: rgba(24, 24, 27, 0.8);
+            --glass-border: rgba(63, 63, 70, 0.5);
+
+            /* Text colors */
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+
+            /* Brand colors */
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(139, 92, 246, 0.25);
+
+            /* Semantic colors */
             --success: #22c55e;
+            --success-bg: rgba(34, 197, 94, 0.12);
             --error: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.12);
             --warning: #f59e0b;
-            --border: #333;
-            --highlight: #ffeb3b;
+            --warning-bg: rgba(245, 158, 11, 0.12);
+            --info: #3b82f6;
+            --info-bg: rgba(59, 130, 246, 0.12);
+
+            /* Karaoke highlight */
+            --highlight: #fbbf24;
+            --highlight-glow: rgba(251, 191, 36, 0.3);
+
+            /* Borders */
+            --border: rgba(63, 63, 70, 0.6);
+            --border-hover: rgba(139, 92, 246, 0.5);
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 20px var(--accent-glow);
+
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+
+            /* Border radius */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+            /* Reader-specific */
+            --reader-font-size: 1.25rem;
+            --reader-line-height: 1.9;
+            --reader-max-width: 65ch;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ========================================
+           CSS Reset & Base Styles
+           ======================================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-sans);
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        /* Subtle animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.08), transparent);
+            pointer-events: none;
+            z-index: -1;
+        }
 
+        /* Focus visible styles for accessibility */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Selection styles */
+        ::selection {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-full);
+            border: 2px solid var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ========================================
+           Layout
+           ======================================== */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+
+        /* ========================================
+           Header
+           ======================================== */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-icon svg {
+            width: 22px;
+            height: 22px;
+            color: white;
         }
 
         h1 {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        /* Tabs */
+        h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* ========================================
+           Tabs Navigation
+           ======================================== */
         .tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            background: var(--bg-secondary);
+            padding: var(--space-xs);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
         }
 
         .tab {
-            background: none;
+            flex: 1;
+            background: transparent;
             border: none;
             color: var(--text-secondary);
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
+            padding: var(--space-md) var(--space-lg);
+            font-size: 0.9375rem;
+            font-weight: 500;
             cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            transition: all 0.2s;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
         }
 
-        .tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
-        .tab.active { color: var(--accent); background: var(--bg-secondary); border-bottom: 2px solid var(--accent); }
+        .tab svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+            transition: opacity var(--transition-base);
+        }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
 
-        /* Cards */
+        .tab:hover svg {
+            opacity: 1;
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab.active svg {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn var(--transition-slow) ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========================================
+           Cards with Glassmorphism
+           ======================================== */
         .card {
-            background: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+            transition: border-color var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
         }
 
         .card-title {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1rem;
+            letter-spacing: 0.08em;
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
         }
 
-        /* Form elements */
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+        .card-title svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+
+        /* ========================================
+           Form Elements
+           ======================================== */
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
 
         input, textarea, select {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem var(--space-md);
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             color: var(--text-primary);
-            font-size: 0.95rem;
+            font-size: 0.9375rem;
             font-family: inherit;
+            transition: all var(--transition-base);
         }
 
-        textarea { min-height: 120px; resize: vertical; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+        }
 
-        .controls-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.6;
+        }
 
-        /* Buttons */
+        input:hover, textarea:hover, select:hover {
+            border-color: var(--bg-elevated);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        /* ========================================
+           Buttons
+           ======================================== */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1.5rem;
-            font-size: 1rem;
+            gap: var(--space-sm);
+            padding: 0.875rem var(--space-lg);
+            font-size: 0.9375rem;
             font-weight: 600;
+            font-family: inherit;
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--border); }
-        .btn-full { width: 100%; }
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.85rem; }
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
 
-        /* Provider grid */
-        .provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            box-shadow: var(--shadow-md), 0 0 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg), 0 0 30px var(--accent-glow);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: var(--space-sm) var(--space-md);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-small {
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.8125rem;
+        }
+
+        /* ========================================
+           Provider Selection Grid
+           ======================================== */
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
 
         .provider-card {
             background: var(--bg-tertiary);
             border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-base);
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .provider-card:hover { border-color: var(--accent); }
-        .provider-card.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
-        .provider-name { font-weight: 600; margin-bottom: 0.25rem; }
-        .provider-desc { font-size: 0.75rem; color: var(--text-secondary); }
-        .provider-badge { display: inline-block; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; text-transform: uppercase; font-weight: 600; }
-        .badge-free { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .provider-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-glow), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
 
-        /* Speed control */
-        .speed-control { display: flex; align-items: center; gap: 0.75rem; }
-        input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: var(--bg-tertiary); }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; }
-        .speed-value { min-width: 40px; text-align: center; font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+        .provider-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
 
-        /* Audio player */
-        .audio-player { display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 10px; }
-        .audio-player.visible { display: block; }
-        .audio-player audio { width: 100%; }
+        .provider-card:hover::before {
+            opacity: 1;
+        }
 
-        /* Status */
-        .status { text-align: center; padding: 0.75rem; border-radius: 8px; margin-top: 1rem; display: none; font-size: 0.9rem; }
-        .status.loading { display: block; background: rgba(99, 102, 241, 0.1); color: var(--accent); }
-        .status.error { display: block; background: rgba(239, 68, 68, 0.1); color: var(--error); }
-        .status.success { display: block; background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .provider-card.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+        }
 
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.75s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .provider-card.selected::after {
+            content: '';
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* Book Reader Styles */
-        .search-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
-        .search-row input { flex: 1; }
+        .provider-name {
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            position: relative;
+        }
 
-        .book-list { display: grid; gap: 0.75rem; }
+        .provider-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            position: relative;
+        }
+
+        .provider-badge {
+            display: inline-block;
+            font-size: 0.625rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-full);
+            margin-top: var(--space-sm);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            position: relative;
+        }
+
+        .badge-free {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge-premium {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        /* ========================================
+           Speed Control (Range Slider)
+           ======================================== */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: var(--radius-full);
+            background: var(--bg-elevated);
+            padding: 0;
+            border: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: var(--shadow-md), 0 0 10px var(--accent-glow);
+            transition: transform var(--transition-spring);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .speed-value {
+            min-width: 48px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.875rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========================================
+           Audio Player
+           ======================================== */
+        .audio-player {
+            display: none;
+            margin-top: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            animation: slideUp var(--transition-slow) ease-out;
+        }
+
+        .audio-player.visible {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .audio-player audio {
+            width: 100%;
+            height: 40px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Style native audio element */
+        audio::-webkit-media-controls-panel {
+            background: var(--bg-secondary);
+        }
+
+        /* ========================================
+           Status Messages
+           ======================================== */
+        .status {
+            text-align: center;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-md);
+            display: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            animation: fadeIn var(--transition-base);
+        }
+
+        .status.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            background: var(--info-bg);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status.error {
+            display: block;
+            background: var(--error-bg);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status.success {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        /* Spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: var(--radius-full);
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========================================
+           Book Reader - Library View
+           ======================================== */
+        .search-row {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .search-row input {
+            flex: 1;
+        }
+
+        .book-list {
+            display: grid;
+            gap: var(--space-md);
+        }
+
         .book-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: var(--space-md) var(--space-lg);
             background: var(--bg-tertiary);
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-base);
+            border: 1px solid transparent;
         }
-        .book-item:hover { background: var(--border); }
-        .book-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
-        .book-info p { font-size: 0.85rem; color: var(--text-secondary); }
-        .book-meta { text-align: right; font-size: 0.8rem; color: var(--text-secondary); }
 
-        .chapter-list { display: grid; gap: 0.5rem; max-height: 300px; overflow-y: auto; }
+        .book-item:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            transform: translateX(4px);
+        }
+
+        .book-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .book-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .book-meta {
+            text-align: right;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            margin-left: var(--space-md);
+        }
+
+        .book-meta .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Chapter List */
+        .chapter-list {
+            display: grid;
+            gap: var(--space-sm);
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: var(--space-sm);
+        }
+
         .chapter-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: var(--space-md);
             background: var(--bg-tertiary);
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-base);
+            border-left: 3px solid transparent;
         }
-        .chapter-item:hover { background: var(--border); }
-        .chapter-item.active { border-left: 3px solid var(--accent); }
-        .chapter-item.completed { border-left: 3px solid var(--success); }
-        .chapter-title { font-weight: 500; }
-        .chapter-words { font-size: 0.8rem; color: var(--text-secondary); }
 
-        /* Karaoke Reader */
+        .chapter-item:hover {
+            background: var(--bg-elevated);
+        }
+
+        .chapter-item.active {
+            border-left-color: var(--accent);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .chapter-item.completed {
+            border-left-color: var(--success);
+        }
+
+        .chapter-item.completed .chapter-status-icon {
+            display: flex;
+        }
+
+        .chapter-title {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .chapter-status-icon {
+            display: none;
+            width: 16px;
+            height: 16px;
+            color: var(--success);
+        }
+
+        .chapter-words {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ========================================
+           Book Reader - Reading View (Karaoke)
+           ======================================== */
         .reader-container {
-            background: var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-top: 1rem;
-            max-height: 400px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            margin-top: var(--space-md);
+            max-height: 60vh;
             overflow-y: auto;
+            scroll-behavior: smooth;
+            border: 1px solid var(--border);
         }
 
         .reader-text {
-            font-size: 1.2rem;
-            line-height: 2;
+            font-family: var(--font-serif);
+            font-size: var(--reader-font-size);
+            line-height: var(--reader-line-height);
+            max-width: var(--reader-max-width);
+            margin: 0 auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            color: var(--text-secondary);
         }
 
         .reader-text .word {
             display: inline;
-            transition: background-color 0.1s, color 0.1s;
-            border-radius: 3px;
-            padding: 0 2px;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 0 -2px;
+            transition:
+                background-color var(--transition-fast),
+                color var(--transition-fast),
+                box-shadow var(--transition-fast);
         }
 
         .reader-text .word.speaking {
             background-color: var(--highlight);
             color: #000;
+            box-shadow: 0 0 20px var(--highlight-glow);
+            font-weight: 500;
         }
 
         .reader-text .word.spoken {
-            color: var(--text-secondary);
+            color: var(--text-muted);
         }
 
+        /* Reader Controls - Fixed at bottom */
         .reader-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border-radius: 10px;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
         }
 
-        .reader-controls audio { flex: 1; }
+        .reader-controls audio {
+            flex: 1;
+            height: 36px;
+        }
 
+        .reader-nav {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .reader-nav button {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-base);
+        }
+
+        .reader-nav button:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .reader-nav button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Progress bar for chapter */
+        .chapter-progress {
+            height: 3px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            margin-top: var(--space-md);
+            overflow: hidden;
+        }
+
+        .chapter-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: var(--radius-full);
+            width: 0%;
+            transition: width var(--transition-base);
+        }
+
+        /* Back button */
         .back-btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--space-sm);
             color: var(--text-secondary);
             cursor: pointer;
-            margin-bottom: 1rem;
+            margin-bottom: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
+            font-weight: 500;
+            font-size: 0.875rem;
         }
-        .back-btn:hover { color: var(--text-primary); }
 
-        /* Empty state */
+        .back-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .back-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ========================================
+           Empty States
+           ======================================== */
         .empty-state {
             text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
+            padding: var(--space-2xl);
+            color: var(--text-muted);
         }
 
-        footer { text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.85rem; }
-        footer a { color: var(--accent); text-decoration: none; }
+        .empty-state-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto var(--space-md);
+            opacity: 0.4;
+        }
 
-        @media (max-width: 600px) {
-            .container { padding: 1rem; }
-            .controls-row { grid-template-columns: 1fr; }
-            .tabs { flex-wrap: wrap; }
+        .empty-state-title {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .empty-state-desc {
+            font-size: 0.875rem;
+        }
+
+        /* ========================================
+           Footer
+           ======================================== */
+        footer {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            border-top: 1px solid var(--border);
+            margin-top: var(--space-xl);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-base);
+        }
+
+        footer a:hover {
+            color: var(--accent-light);
+        }
+
+        /* ========================================
+           Accessibility: Skip Link
+           ======================================== */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: white;
+            padding: var(--space-sm) var(--space-md);
+            z-index: 100;
+            transition: top var(--transition-base);
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* ========================================
+           Responsive Design
+           ======================================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-md);
+            }
+
+            header {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+
+            .provider-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .reader-container {
+                padding: var(--space-lg);
+                max-height: 50vh;
+            }
+
+            .reader-text {
+                font-size: 1.125rem;
+            }
+
+            .reader-controls {
+                flex-direction: column;
+            }
+
+            .search-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .provider-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .book-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .book-meta {
+                text-align: left;
+                margin-left: 0;
+            }
+        }
+
+        /* ========================================
+           Reduced Motion
+           ======================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ========================================
+           Print Styles
+           ======================================== */
+        @media print {
+            body::before,
+            .tabs,
+            .audio-player,
+            .reader-controls,
+            footer {
+                display: none;
+            }
+
+            .card {
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: none;
+            }
+
+            .reader-text {
+                color: black;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <div class="container">
         <header>
-            <h1>Text to Speech</h1>
+            <div class="logo">
+                <div class="logo-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" x2="12" y1="19" y2="22"></line>
+                    </svg>
+                </div>
+                <h1>Text <span>to Speech</span></h1>
+            </div>
         </header>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-tab="quick">Quick TTS</button>
-            <button class="tab" data-tab="books">Book Reader</button>
-        </div>
+        <!-- Tabs Navigation -->
+        <nav class="tabs" role="tablist" aria-label="Main navigation">
+            <button class="tab active" data-tab="quick" role="tab" aria-selected="true" aria-controls="quick-tab" id="tab-quick">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+                Quick TTS
+            </button>
+            <button class="tab" data-tab="books" role="tab" aria-selected="false" aria-controls="books-tab" id="tab-books">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                </svg>
+                Book Reader
+            </button>
+        </nav>
 
-        <!-- Quick TTS Tab -->
-        <div id="quick-tab" class="tab-content active">
-            <div class="card">
-                <div class="card-title">TTS Provider</div>
-                <div class="provider-grid" id="providerGrid"></div>
-            </div>
-
-            <div class="card">
-                <div class="form-group">
-                    <label for="text">Enter Text</label>
-                    <textarea id="text" placeholder="Type or paste your text here...">Hello! Welcome to the text-to-speech service.</textarea>
+        <main id="main-content">
+            <!-- Quick TTS Tab -->
+            <div id="quick-tab" class="tab-content active" role="tabpanel" aria-labelledby="tab-quick">
+                <div class="card">
+                    <div class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        TTS Provider
+                    </div>
+                    <div class="provider-grid" id="providerGrid" role="radiogroup" aria-label="Select TTS provider"></div>
                 </div>
 
-                <div class="controls-row">
+                <div class="card">
                     <div class="form-group">
-                        <label for="voice">Voice</label>
-                        <select id="voice"><option value="">Loading...</option></select>
+                        <label for="text">Enter Text</label>
+                        <textarea
+                            id="text"
+                            placeholder="Type or paste your text here..."
+                            aria-describedby="text-hint"
+                        >Hello! Welcome to the text-to-speech service.</textarea>
+                        <span id="text-hint" class="visually-hidden">Enter the text you want to convert to speech</span>
                     </div>
-                    <div class="form-group">
-                        <label for="format">Format</label>
-                        <select id="format">
-                            <option value="mp3">MP3</option>
-                            <option value="wav">WAV</option>
-                            <option value="ogg">OGG</option>
-                        </select>
+
+                    <div class="controls-row">
+                        <div class="form-group">
+                            <label for="voice">Voice</label>
+                            <select id="voice" aria-describedby="voice-loading">
+                                <option value="">Loading voices...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="format">Output Format</label>
+                            <select id="format">
+                                <option value="mp3">MP3 (Recommended)</option>
+                                <option value="wav">WAV (Lossless)</option>
+                                <option value="ogg">OGG (Compressed)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="speed" id="speed-label">Speed</label>
+                            <div class="speed-control">
+                                <input
+                                    type="range"
+                                    id="speed"
+                                    min="0.5"
+                                    max="2"
+                                    step="0.1"
+                                    value="1"
+                                    aria-labelledby="speed-label"
+                                    aria-valuemin="0.5"
+                                    aria-valuemax="2"
+                                    aria-valuenow="1"
+                                    aria-valuetext="1x speed"
+                                >
+                                <span class="speed-value" id="speedValue" aria-live="polite">1.0x</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Speed</label>
-                        <div class="speed-control">
-                            <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1">
-                            <span class="speed-value" id="speedValue">1.0x</span>
+
+                    <button class="btn btn-primary btn-full" id="synthesizeBtn" aria-describedby="synth-status">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Generate Speech
+                    </button>
+
+                    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+                    <div class="audio-player" id="audioPlayer" aria-label="Generated audio playback">
+                        <audio id="audio" controls aria-label="Generated speech audio"></audio>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book Reader Tab -->
+            <div id="books-tab" class="tab-content" role="tabpanel" aria-labelledby="tab-books">
+                <!-- Library View -->
+                <div id="library-view">
+                    <div class="card">
+                        <div class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                            Search Project Gutenberg
+                        </div>
+                        <div class="search-row">
+                            <input
+                                type="search"
+                                id="gutenbergSearch"
+                                placeholder="Search for books (e.g., Pride and Prejudice, Sherlock Holmes)"
+                                aria-label="Search Project Gutenberg library"
+                            >
+                            <button class="btn btn-primary" id="searchBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                                Search
+                            </button>
+                        </div>
+                        <div id="searchResults" class="book-list" role="list" aria-label="Search results"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" x2="12" y1="3" y2="15"></line>
+                            </svg>
+                            Or Upload Your Own Text
+                        </div>
+                        <div class="form-group">
+                            <label for="uploadTitle">Book Title</label>
+                            <input type="text" id="uploadTitle" placeholder="My Book">
+                        </div>
+                        <div class="form-group">
+                            <label for="uploadText">Paste Book Text</label>
+                            <textarea id="uploadText" placeholder="Paste your book text here. Chapters will be detected automatically based on 'Chapter' headings."></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-full" id="uploadBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" x2="12" y1="3" y2="15"></line>
+                            </svg>
+                            Upload Book
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M16 3h5v5"></path>
+                                <path d="M8 3H3v5"></path>
+                                <path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"></path>
+                                <path d="m15 9 6-6"></path>
+                            </svg>
+                            My Library
+                        </div>
+                        <div id="myBooks" class="book-list" role="list" aria-label="Your book library">
+                            <div class="empty-state">
+                                <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                                    <path d="M9 10h6"></path>
+                                    <path d="M9 14h6"></path>
+                                </svg>
+                                <p class="empty-state-title">No books yet</p>
+                                <p class="empty-state-desc">Search Project Gutenberg or upload your own text to get started.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <button class="btn btn-primary btn-full" id="synthesizeBtn">Generate Speech</button>
-                <div class="status" id="status"></div>
-                <div class="audio-player" id="audioPlayer">
-                    <audio id="audio" controls></audio>
-                </div>
-            </div>
-        </div>
-
-        <!-- Book Reader Tab -->
-        <div id="books-tab" class="tab-content">
-            <!-- Library View -->
-            <div id="library-view">
-                <div class="card">
-                    <div class="card-title">Search Project Gutenberg</div>
-                    <div class="search-row">
-                        <input type="text" id="gutenbergSearch" placeholder="Search for books (e.g., Pride and Prejudice, Sherlock Holmes)">
-                        <button class="btn btn-primary" id="searchBtn">Search</button>
-                    </div>
-                    <div id="searchResults" class="book-list"></div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Or Upload Your Own Text</div>
-                    <div class="form-group">
-                        <label for="uploadTitle">Book Title</label>
-                        <input type="text" id="uploadTitle" placeholder="My Book">
-                    </div>
-                    <div class="form-group">
-                        <label for="uploadText">Paste Book Text</label>
-                        <textarea id="uploadText" placeholder="Paste your book text here. Chapters will be detected automatically."></textarea>
-                    </div>
-                    <button class="btn btn-primary btn-full" id="uploadBtn">Upload Book</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">My Books</div>
-                    <div id="myBooks" class="book-list">
-                        <div class="empty-state">No books yet. Search Gutenberg or upload your own text.</div>
+                <!-- Book View -->
+                <div id="book-view" style="display: none;">
+                    <button class="back-btn" id="backToLibrary" aria-label="Go back to library">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m12 19-7-7 7-7"></path>
+                            <path d="M19 12H5"></path>
+                        </svg>
+                        Back to Library
+                    </button>
+                    <div class="card">
+                        <h2 id="bookTitle" style="margin-bottom: var(--space-sm); font-size: 1.5rem; font-weight: 700;"></h2>
+                        <p id="bookAuthor" style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: 1rem;"></p>
+                        <div class="card-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 6h16"></path>
+                                <path d="M4 12h16"></path>
+                                <path d="M4 18h12"></path>
+                            </svg>
+                            Chapters
+                        </div>
+                        <div id="chapterList" class="chapter-list" role="list" aria-label="Book chapters"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Book View -->
-            <div id="book-view" style="display: none;">
-                <div class="back-btn" id="backToLibrary">← Back to Library</div>
-                <div class="card">
-                    <h2 id="bookTitle" style="margin-bottom: 0.5rem;"></h2>
-                    <p id="bookAuthor" style="color: var(--text-secondary); margin-bottom: 1rem;"></p>
-                    <div class="card-title">Chapters</div>
-                    <div id="chapterList" class="chapter-list"></div>
-                </div>
-            </div>
+                <!-- Reader View -->
+                <div id="reader-view" style="display: none;">
+                    <button class="back-btn" id="backToBook" aria-label="Go back to chapter list">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m12 19-7-7 7-7"></path>
+                            <path d="M19 12H5"></path>
+                        </svg>
+                        Back to Chapters
+                    </button>
 
-            <!-- Reader View -->
-            <div id="reader-view" style="display: none;">
-                <div class="back-btn" id="backToBook">← Back to Chapters</div>
-                <div class="card">
-                    <h3 id="chapterTitle" style="margin-bottom: 0.5rem;"></h3>
-                    <p id="chapterInfo" style="color: var(--text-secondary); font-size: 0.85rem;"></p>
-                </div>
+                    <div class="card">
+                        <h3 id="chapterTitle" style="margin-bottom: var(--space-sm); font-size: 1.25rem; font-weight: 600;"></h3>
+                        <p id="chapterInfo" style="color: var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: var(--space-sm);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M17 6.1H3"></path>
+                                <path d="M21 12.1H3"></path>
+                                <path d="M15.1 18H3"></path>
+                            </svg>
+                            <span id="chapterWordCount"></span>
+                        </p>
+                        <div class="chapter-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Reading progress">
+                            <div class="chapter-progress-bar" id="chapterProgressBar"></div>
+                        </div>
+                    </div>
 
-                <div class="card" id="readerCard">
-                    <div id="synthesizePrompt">
-                        <p style="margin-bottom: 1rem;">Generate audio to start reading with synchronized highlighting.</p>
-                        <div class="controls-row" style="margin-bottom: 1rem;">
-                            <div class="form-group">
-                                <label>Voice</label>
-                                <select id="readerVoice"></select>
+                    <div class="card" id="readerCard">
+                        <div id="synthesizePrompt">
+                            <div style="text-align: center; padding: var(--space-lg);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto var(--space-md); opacity: 0.5; color: var(--accent);" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                                </svg>
+                                <p style="margin-bottom: var(--space-lg); color: var(--text-secondary);">Generate audio to start reading with synchronized word highlighting.</p>
                             </div>
-                            <div class="form-group">
-                                <label>Speed</label>
-                                <div class="speed-control">
-                                    <input type="range" id="readerSpeed" min="0.5" max="2" step="0.1" value="1">
-                                    <span class="speed-value" id="readerSpeedValue">1.0x</span>
+                            <div class="controls-row" style="margin-bottom: var(--space-lg);">
+                                <div class="form-group">
+                                    <label for="readerVoice">Voice</label>
+                                    <select id="readerVoice"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="readerSpeed" id="reader-speed-label">Speed</label>
+                                    <div class="speed-control">
+                                        <input
+                                            type="range"
+                                            id="readerSpeed"
+                                            min="0.5"
+                                            max="2"
+                                            step="0.1"
+                                            value="1"
+                                            aria-labelledby="reader-speed-label"
+                                            aria-valuenow="1"
+                                            aria-valuetext="1x speed"
+                                        >
+                                        <span class="speed-value" id="readerSpeedValue" aria-live="polite">1.0x</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" id="generateChapterBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" x2="12" y1="19" y2="22"></line>
+                                </svg>
+                                Generate Audio
+                            </button>
+                            <div class="status" id="readerStatus" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div id="readerContent" style="display: none;">
+                            <div class="reader-container" tabindex="0" aria-label="Chapter text with synchronized highlighting">
+                                <div class="reader-text" id="readerText" aria-live="off"></div>
+                            </div>
+                            <div class="reader-controls">
+                                <div class="reader-nav" aria-label="Playback controls">
+                                    <button type="button" id="prevChapterBtn" aria-label="Previous chapter" title="Previous chapter">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                                            <line x1="5" x2="5" y1="19" y2="5"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <audio id="readerAudio" controls aria-label="Chapter audio playback"></audio>
+                                <div class="reader-nav">
+                                    <button type="button" id="nextChapterBtn" aria-label="Next chapter" title="Next chapter">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                                            <line x1="19" x2="19" y1="5" y2="19"></line>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary btn-full" id="generateChapterBtn">Generate Audio</button>
-                        <div class="status" id="readerStatus"></div>
-                    </div>
-
-                    <div id="readerContent" style="display: none;">
-                        <div class="reader-container">
-                            <div class="reader-text" id="readerText"></div>
-                        </div>
-                        <div class="reader-controls">
-                            <audio id="readerAudio" controls></audio>
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
         <footer>
-            <a href="/docs" target="_blank">API Docs</a>
+            <p>Powered by open-source TTS engines</p>
+            <a href="/docs" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;" aria-hidden="true">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                API Documentation
+            </a>
         </footer>
     </div>
 
     <script>
-        // State
-        let providers = [];
-        let selectedProvider = 'edge';
-        let currentBook = null;
-        let currentChapter = null;
-        let wordTimings = [];
-        let currentWordIndex = -1;
-        let animationId = null;
-
-        // Elements
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        // Tab switching
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
-            });
-        });
+        // =====================
+        // Application State
+        // =====================
+        const state = {
+            providers: [],
+            selectedProvider: 'edge',
+            currentBook: null,
+            currentChapter: null,
+            currentChapterIndex: -1,
+            wordTimings: [],
+            currentWordIndex: -1,
+            animationId: null
+        };
 
         // =====================
-        // Quick TTS Functions
+        // DOM Elements Cache
         // =====================
-        async function loadProviders() {
-            const response = await fetch('/v1/tts/providers');
-            providers = await response.json();
-            renderProviders();
-            loadVoices();
-            loadReaderVoices();
-        }
+        const elements = {
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            providerGrid: document.getElementById('providerGrid'),
+            voiceSelect: document.getElementById('voice'),
+            speedSlider: document.getElementById('speed'),
+            speedValue: document.getElementById('speedValue'),
+            synthesizeBtn: document.getElementById('synthesizeBtn'),
+            status: document.getElementById('status'),
+            audioPlayer: document.getElementById('audioPlayer'),
+            audio: document.getElementById('audio'),
+            readerAudio: document.getElementById('readerAudio'),
+            readerText: document.getElementById('readerText'),
+            chapterProgressBar: document.getElementById('chapterProgressBar'),
+            chapterWordCount: document.getElementById('chapterWordCount')
+        };
 
-        function renderProviders() {
-            const grid = document.getElementById('providerGrid');
-            grid.innerHTML = providers.map(p => `
-                <div class="provider-card ${p.id === selectedProvider ? 'selected' : ''}" data-provider="${p.id}">
-                    <div class="provider-name">${p.name}</div>
-                    <div class="provider-desc">${p.description.split(' - ')[0]}</div>
-                    ${!p.requires_api_key ? '<span class="provider-badge badge-free">Free</span>' : ''}
-                </div>
-            `).join('');
+        // =====================
+        // Tab Navigation with Keyboard Support
+        // =====================
+        function initTabs() {
+            elements.tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => switchTab(tab));
 
-            document.querySelectorAll('.provider-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    selectedProvider = card.dataset.provider;
-                    renderProviders();
-                    loadVoices();
+                // Keyboard navigation
+                tab.addEventListener('keydown', (e) => {
+                    const tabsArray = Array.from(elements.tabs);
+                    let newIndex = index;
+
+                    switch (e.key) {
+                        case 'ArrowLeft':
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            newIndex = index === 0 ? tabsArray.length - 1 : index - 1;
+                            break;
+                        case 'ArrowRight':
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            newIndex = index === tabsArray.length - 1 ? 0 : index + 1;
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            newIndex = 0;
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            newIndex = tabsArray.length - 1;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    tabsArray[newIndex].focus();
+                    switchTab(tabsArray[newIndex]);
                 });
             });
         }
 
+        function switchTab(selectedTab) {
+            elements.tabs.forEach(tab => {
+                const isSelected = tab === selectedTab;
+                tab.classList.toggle('active', isSelected);
+                tab.setAttribute('aria-selected', isSelected);
+                tab.setAttribute('tabindex', isSelected ? '0' : '-1');
+            });
+
+            elements.tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            const targetId = `${selectedTab.dataset.tab}-tab`;
+            document.getElementById(targetId).classList.add('active');
+        }
+
+        // =====================
+        // Provider Selection
+        // =====================
+        async function loadProviders() {
+            try {
+                const response = await fetch('/v1/tts/providers');
+                state.providers = await response.json();
+                renderProviders();
+                await Promise.all([loadVoices(), loadReaderVoices()]);
+            } catch (error) {
+                console.error('Failed to load providers:', error);
+                showStatus(elements.status, 'Failed to load providers. Please refresh.', 'error');
+            }
+        }
+
+        function renderProviders() {
+            elements.providerGrid.innerHTML = state.providers.map((p, index) => `
+                <div
+                    class="provider-card ${p.id === state.selectedProvider ? 'selected' : ''}"
+                    data-provider="${p.id}"
+                    role="radio"
+                    aria-checked="${p.id === state.selectedProvider}"
+                    tabindex="${p.id === state.selectedProvider ? '0' : '-1'}"
+                    aria-label="${p.name} provider${!p.requires_api_key ? ', Free' : ''}"
+                >
+                    <div class="provider-name">${escapeHtml(p.name)}</div>
+                    <div class="provider-desc">${escapeHtml(p.description.split(' - ')[0])}</div>
+                    ${!p.requires_api_key
+                        ? '<span class="provider-badge badge-free">Free</span>'
+                        : '<span class="provider-badge badge-premium">API Key</span>'
+                    }
+                </div>
+            `).join('');
+
+            // Add event listeners with keyboard support
+            document.querySelectorAll('.provider-card').forEach((card, index) => {
+                card.addEventListener('click', () => selectProvider(card));
+
+                card.addEventListener('keydown', (e) => {
+                    const cards = Array.from(document.querySelectorAll('.provider-card'));
+                    let newIndex = index;
+
+                    switch (e.key) {
+                        case 'ArrowLeft':
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            newIndex = index === 0 ? cards.length - 1 : index - 1;
+                            break;
+                        case 'ArrowRight':
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            newIndex = index === cards.length - 1 ? 0 : index + 1;
+                            break;
+                        case 'Enter':
+                        case ' ':
+                            e.preventDefault();
+                            selectProvider(card);
+                            return;
+                        default:
+                            return;
+                    }
+
+                    cards[newIndex].focus();
+                });
+            });
+        }
+
+        function selectProvider(card) {
+            state.selectedProvider = card.dataset.provider;
+            renderProviders();
+            loadVoices();
+        }
+
+        // =====================
+        // Voice Loading
+        // =====================
         async function loadVoices() {
-            const response = await fetch(`/v1/tts/voices?provider=${selectedProvider}`);
-            const voices = await response.json();
-            document.getElementById('voice').innerHTML = voices.map((v, i) =>
-                `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language})</option>`
-            ).join('');
+            elements.voiceSelect.innerHTML = '<option value="">Loading voices...</option>';
+            elements.voiceSelect.disabled = true;
+
+            try {
+                const response = await fetch(`/v1/tts/voices?provider=${state.selectedProvider}`);
+                const voices = await response.json();
+
+                elements.voiceSelect.innerHTML = voices.map((v, i) =>
+                    `<option value="${escapeHtml(v.id)}" ${i === 0 ? 'selected' : ''}>${escapeHtml(v.name)} (${escapeHtml(v.language)})</option>`
+                ).join('');
+                elements.voiceSelect.disabled = false;
+            } catch (error) {
+                elements.voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
+                console.error('Failed to load voices:', error);
+            }
         }
 
         async function loadReaderVoices() {
-            const response = await fetch('/v1/tts/voices?provider=edge');
-            const voices = await response.json();
-            document.getElementById('readerVoice').innerHTML = voices.map((v, i) =>
-                `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language})</option>`
-            ).join('');
+            const readerVoiceSelect = document.getElementById('readerVoice');
+
+            try {
+                const response = await fetch('/v1/tts/voices?provider=edge');
+                const voices = await response.json();
+
+                readerVoiceSelect.innerHTML = voices.map((v, i) =>
+                    `<option value="${escapeHtml(v.id)}" ${i === 0 ? 'selected' : ''}>${escapeHtml(v.name)} (${escapeHtml(v.language)})</option>`
+                ).join('');
+            } catch (error) {
+                console.error('Failed to load reader voices:', error);
+            }
         }
 
-        document.getElementById('speed').addEventListener('input', (e) => {
-            document.getElementById('speedValue').textContent = `${e.target.value}x`;
-        });
+        // =====================
+        // Speed Control
+        // =====================
+        function initSpeedControls() {
+            const speedInputs = [
+                { slider: 'speed', display: 'speedValue' },
+                { slider: 'readerSpeed', display: 'readerSpeedValue' }
+            ];
 
-        document.getElementById('readerSpeed').addEventListener('input', (e) => {
-            document.getElementById('readerSpeedValue').textContent = `${e.target.value}x`;
-        });
+            speedInputs.forEach(({ slider, display }) => {
+                const sliderEl = document.getElementById(slider);
+                const displayEl = document.getElementById(display);
 
-        document.getElementById('synthesizeBtn').addEventListener('click', async () => {
+                if (sliderEl && displayEl) {
+                    sliderEl.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value).toFixed(1);
+                        displayEl.textContent = `${value}x`;
+                        sliderEl.setAttribute('aria-valuenow', value);
+                        sliderEl.setAttribute('aria-valuetext', `${value}x speed`);
+                    });
+                }
+            });
+        }
+
+        // =====================
+        // Quick TTS Synthesis
+        // =====================
+        async function synthesizeSpeech() {
             const text = document.getElementById('text').value.trim();
-            if (!text) return;
+            if (!text) {
+                showStatus(elements.status, 'Please enter some text to convert.', 'error');
+                return;
+            }
 
-            const btn = document.getElementById('synthesizeBtn');
-            const status = document.getElementById('status');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Generating...';
-            status.className = 'status';
+            const btn = elements.synthesizeBtn;
+            setButtonLoading(btn, true, 'Generating...');
 
             try {
                 const response = await fetch('/v1/tts/synthesize', {
@@ -523,93 +1743,145 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text,
-                        provider: selectedProvider,
-                        voice: document.getElementById('voice').value,
-                        speed: parseFloat(document.getElementById('speed').value),
+                        provider: state.selectedProvider,
+                        voice: elements.voiceSelect.value,
+                        speed: parseFloat(elements.speedSlider.value),
                         format: document.getElementById('format').value,
                     }),
                 });
 
-                if (!response.ok) throw new Error((await response.json()).detail);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate speech');
+                }
 
                 const blob = await response.blob();
-                const audio = document.getElementById('audio');
-                audio.src = URL.createObjectURL(blob);
-                document.getElementById('audioPlayer').classList.add('visible');
-                audio.play();
-                status.textContent = 'Speech generated!';
-                status.className = 'status success';
+                elements.audio.src = URL.createObjectURL(blob);
+                elements.audioPlayer.classList.add('visible');
+
+                // Auto-play with user gesture already occurred
+                try {
+                    await elements.audio.play();
+                } catch (playError) {
+                    console.log('Auto-play prevented, user can click play');
+                }
+
+                showStatus(elements.status, 'Speech generated successfully!', 'success');
             } catch (error) {
-                status.textContent = error.message;
-                status.className = 'status error';
+                showStatus(elements.status, error.message, 'error');
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Generate Speech';
+                setButtonLoading(btn, false, 'Generate Speech', `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `);
             }
-        });
+        }
 
         // =====================
         // Book Reader Functions
         // =====================
-        document.getElementById('searchBtn').addEventListener('click', searchGutenberg);
-        document.getElementById('uploadBtn').addEventListener('click', uploadBook);
-        document.getElementById('backToLibrary').addEventListener('click', showLibrary);
-        document.getElementById('backToBook').addEventListener('click', showBook);
-        document.getElementById('generateChapterBtn').addEventListener('click', generateChapterAudio);
-
         async function searchGutenberg() {
             const query = document.getElementById('gutenbergSearch').value.trim();
             if (!query) return;
 
             const results = document.getElementById('searchResults');
-            results.innerHTML = '<div class="empty-state"><span class="spinner"></span> Searching...</div>';
+            results.innerHTML = `
+                <div class="empty-state">
+                    <span class="spinner"></span>
+                    <p style="margin-top: var(--space-sm);">Searching Project Gutenberg...</p>
+                </div>
+            `;
 
             try {
                 const response = await fetch(`/v1/books/search?q=${encodeURIComponent(query)}`);
                 const books = await response.json();
 
                 if (books.length === 0) {
-                    results.innerHTML = '<div class="empty-state">No books found</div>';
+                    results.innerHTML = `
+                        <div class="empty-state">
+                            <p class="empty-state-title">No books found</p>
+                            <p class="empty-state-desc">Try a different search term.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 results.innerHTML = books.slice(0, 10).map(book => `
-                    <div class="book-item" onclick="importBook('${book.id}')">
+                    <div class="book-item" role="listitem" tabindex="0" onclick="importBook('${escapeHtml(book.id)}')" onkeydown="handleBookItemKeydown(event, '${escapeHtml(book.id)}')">
                         <div class="book-info">
-                            <h3>${book.title}</h3>
-                            <p>${book.author}</p>
+                            <h3>${escapeHtml(book.title)}</h3>
+                            <p>${escapeHtml(book.author)}</p>
                         </div>
-                        <div class="book-meta">${book.language.toUpperCase()}</div>
+                        <div class="book-meta">
+                            <span class="badge">${escapeHtml(book.language.toUpperCase())}</span>
+                        </div>
                     </div>
                 `).join('');
             } catch (error) {
-                results.innerHTML = `<div class="empty-state" style="color: var(--error);">${error.message}</div>`;
+                results.innerHTML = `
+                    <div class="empty-state" style="color: var(--error);">
+                        <p class="empty-state-title">Search failed</p>
+                        <p class="empty-state-desc">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function handleBookItemKeydown(event, bookId) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                importBook(bookId);
             }
         }
 
         async function importBook(gutenbergId) {
             const results = document.getElementById('searchResults');
-            results.innerHTML = '<div class="empty-state"><span class="spinner"></span> Importing book...</div>';
+            results.innerHTML = `
+                <div class="empty-state">
+                    <span class="spinner"></span>
+                    <p style="margin-top: var(--space-sm);">Importing book...</p>
+                </div>
+            `;
 
             try {
                 const response = await fetch(`/v1/books/import/${gutenbergId}`, { method: 'POST' });
-                if (!response.ok) throw new Error((await response.json()).detail);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to import book');
+                }
 
-                results.innerHTML = '<div class="empty-state" style="color: var(--success);">Book imported!</div>';
+                results.innerHTML = `
+                    <div class="empty-state" style="color: var(--success);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: var(--space-sm);" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <p class="empty-state-title">Book imported successfully!</p>
+                    </div>
+                `;
                 loadMyBooks();
             } catch (error) {
-                results.innerHTML = `<div class="empty-state" style="color: var(--error);">${error.message}</div>`;
+                results.innerHTML = `
+                    <div class="empty-state" style="color: var(--error);">
+                        <p class="empty-state-title">Import failed</p>
+                        <p class="empty-state-desc">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
             }
         }
 
         async function uploadBook() {
             const title = document.getElementById('uploadTitle').value.trim() || 'Untitled';
             const text = document.getElementById('uploadText').value.trim();
-            if (!text) return;
+
+            if (!text) {
+                alert('Please paste some text to upload.');
+                return;
+            }
 
             const btn = document.getElementById('uploadBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Uploading...';
+            setButtonLoading(btn, true, 'Uploading...');
 
             try {
                 const response = await fetch('/v1/books/upload', {
@@ -617,7 +1889,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, text }),
                 });
-                if (!response.ok) throw new Error((await response.json()).detail);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to upload book');
+                }
 
                 document.getElementById('uploadTitle').value = '';
                 document.getElementById('uploadText').value = '';
@@ -625,8 +1901,13 @@
             } catch (error) {
                 alert(error.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Upload Book';
+                setButtonLoading(btn, false, 'Upload Book', `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" x2="12" y1="3" y2="15"></line>
+                    </svg>
+                `);
             }
         }
 
@@ -636,19 +1917,30 @@
                 const books = await response.json();
 
                 const container = document.getElementById('myBooks');
+
                 if (books.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No books yet.</div>';
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                                <path d="M9 10h6"></path>
+                                <path d="M9 14h6"></path>
+                            </svg>
+                            <p class="empty-state-title">No books yet</p>
+                            <p class="empty-state-desc">Search Project Gutenberg or upload your own text to get started.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 container.innerHTML = books.map(book => `
-                    <div class="book-item" onclick="openBook('${book.id}')">
+                    <div class="book-item" role="listitem" tabindex="0" onclick="openBook('${escapeHtml(book.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBook('${escapeHtml(book.id)}')}">
                         <div class="book-info">
-                            <h3>${book.title}</h3>
-                            <p>${book.author}</p>
+                            <h3>${escapeHtml(book.title)}</h3>
+                            <p>${escapeHtml(book.author)}</p>
                         </div>
                         <div class="book-meta">
-                            ${book.chapter_count} chapters<br>
+                            ${book.chapter_count} chapter${book.chapter_count !== 1 ? 's' : ''}<br>
                             ${book.total_words.toLocaleString()} words
                         </div>
                     </div>
@@ -665,8 +1957,8 @@
                     fetch(`/v1/books/${bookId}/chapters`),
                 ]);
 
-                currentBook = await bookRes.json();
-                currentBook.chapters = await chaptersRes.json();
+                state.currentBook = await bookRes.json();
+                state.currentBook.chapters = await chaptersRes.json();
 
                 showBook();
             } catch (error) {
@@ -678,8 +1970,9 @@
             document.getElementById('library-view').style.display = 'block';
             document.getElementById('book-view').style.display = 'none';
             document.getElementById('reader-view').style.display = 'none';
-            currentBook = null;
-            currentChapter = null;
+            state.currentBook = null;
+            state.currentChapter = null;
+            state.currentChapterIndex = -1;
         }
 
         function showBook() {
@@ -687,31 +1980,50 @@
             document.getElementById('book-view').style.display = 'block';
             document.getElementById('reader-view').style.display = 'none';
 
-            document.getElementById('bookTitle').textContent = currentBook.title;
-            document.getElementById('bookAuthor').textContent = `by ${currentBook.author}`;
+            document.getElementById('bookTitle').textContent = state.currentBook.title;
+            document.getElementById('bookAuthor').textContent = `by ${state.currentBook.author}`;
 
-            document.getElementById('chapterList').innerHTML = currentBook.chapters.map(ch => `
-                <div class="chapter-item ${ch.audio_status === 'completed' ? 'completed' : ''}" onclick="openChapter('${ch.id}')">
-                    <span class="chapter-title">${ch.title}</span>
+            document.getElementById('chapterList').innerHTML = state.currentBook.chapters.map((ch, index) => `
+                <div
+                    class="chapter-item ${ch.audio_status === 'completed' ? 'completed' : ''}"
+                    role="listitem"
+                    tabindex="0"
+                    onclick="openChapter('${escapeHtml(ch.id)}', ${index})"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openChapter('${escapeHtml(ch.id)}', ${index})}"
+                >
+                    <span class="chapter-title">
+                        <svg class="chapter-status-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        ${escapeHtml(ch.title)}
+                    </span>
                     <span class="chapter-words">${ch.word_count.toLocaleString()} words</span>
                 </div>
             `).join('');
         }
 
-        async function openChapter(chapterId) {
+        async function openChapter(chapterId, chapterIndex) {
             try {
-                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${chapterId}`);
-                currentChapter = await response.json();
+                const response = await fetch(`/v1/books/${state.currentBook.id}/chapters/${chapterId}`);
+                state.currentChapter = await response.json();
+                state.currentChapterIndex = chapterIndex;
 
                 document.getElementById('library-view').style.display = 'none';
                 document.getElementById('book-view').style.display = 'none';
                 document.getElementById('reader-view').style.display = 'block';
 
-                document.getElementById('chapterTitle').textContent = currentChapter.title;
-                document.getElementById('chapterInfo').textContent = `${currentChapter.word_count.toLocaleString()} words`;
+                document.getElementById('chapterTitle').textContent = state.currentChapter.title;
+                document.getElementById('chapterWordCount').textContent = `${state.currentChapter.word_count.toLocaleString()} words`;
+
+                // Reset progress bar
+                updateProgressBar(0);
+
+                // Update navigation buttons
+                updateChapterNavigation();
 
                 // Check if audio already exists
-                if (currentChapter.audio_status === 'completed') {
+                if (state.currentChapter.audio_status === 'completed') {
                     await loadChapterPlayback();
                 } else {
                     document.getElementById('synthesizePrompt').style.display = 'block';
@@ -722,16 +2034,40 @@
             }
         }
 
+        function updateChapterNavigation() {
+            const prevBtn = document.getElementById('prevChapterBtn');
+            const nextBtn = document.getElementById('nextChapterBtn');
+
+            prevBtn.disabled = state.currentChapterIndex <= 0;
+            nextBtn.disabled = state.currentChapterIndex >= state.currentBook.chapters.length - 1;
+
+            prevBtn.style.opacity = prevBtn.disabled ? '0.5' : '1';
+            nextBtn.style.opacity = nextBtn.disabled ? '0.5' : '1';
+        }
+
+        function goToPrevChapter() {
+            if (state.currentChapterIndex > 0) {
+                const prevChapter = state.currentBook.chapters[state.currentChapterIndex - 1];
+                openChapter(prevChapter.id, state.currentChapterIndex - 1);
+            }
+        }
+
+        function goToNextChapter() {
+            if (state.currentChapterIndex < state.currentBook.chapters.length - 1) {
+                const nextChapter = state.currentBook.chapters[state.currentChapterIndex + 1];
+                openChapter(nextChapter.id, state.currentChapterIndex + 1);
+            }
+        }
+
         async function generateChapterAudio() {
             const btn = document.getElementById('generateChapterBtn');
             const status = document.getElementById('readerStatus');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Generating audio...';
-            status.className = 'status loading';
-            status.textContent = 'This may take a minute for long chapters...';
+
+            setButtonLoading(btn, true, 'Generating audio...');
+            showStatus(status, 'This may take a minute for long chapters...', 'loading');
 
             try {
-                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${currentChapter.id}/synthesize`, {
+                const response = await fetch(`/v1/books/${state.currentBook.id}/chapters/${state.currentChapter.id}/synthesize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -740,49 +2076,58 @@
                     }),
                 });
 
-                if (!response.ok) throw new Error((await response.json()).detail);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate audio');
+                }
 
                 const result = await response.json();
-                wordTimings = result.timings;
+                state.wordTimings = result.timings;
 
                 await loadChapterPlayback();
                 status.className = 'status';
+                status.style.display = 'none';
             } catch (error) {
-                status.textContent = error.message;
-                status.className = 'status error';
+                showStatus(status, error.message, 'error');
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Generate Audio';
+                setButtonLoading(btn, false, 'Generate Audio', `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" x2="12" y1="19" y2="22"></line>
+                    </svg>
+                `);
             }
         }
 
         async function loadChapterPlayback() {
             try {
-                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${currentChapter.id}/playback`);
+                const response = await fetch(`/v1/books/${state.currentBook.id}/chapters/${state.currentChapter.id}/playback`);
                 if (!response.ok) throw new Error('Playback data not available');
 
                 const playback = await response.json();
-                wordTimings = playback.timings;
+                state.wordTimings = playback.timings;
 
                 // Prepare the reader text with word spans
-                prepareReaderText(currentChapter.text, wordTimings);
+                prepareReaderText(state.currentChapter.text, state.wordTimings);
 
                 // Set up audio
-                const audio = document.getElementById('readerAudio');
+                const audio = elements.readerAudio;
                 audio.src = playback.audio_url;
 
                 document.getElementById('synthesizePrompt').style.display = 'none';
                 document.getElementById('readerContent').style.display = 'block';
 
-                // Set up highlighting
+                // Set up highlighting and progress
                 setupHighlighting(audio);
+                setupProgressTracking(audio);
             } catch (error) {
                 console.error('Failed to load playback:', error);
             }
         }
 
         function prepareReaderText(text, timings) {
-            const container = document.getElementById('readerText');
+            const container = elements.readerText;
 
             if (!timings || timings.length === 0) {
                 container.textContent = text;
@@ -794,7 +2139,6 @@
             let lastEnd = 0;
 
             timings.forEach((timing, index) => {
-                // Add any text before this word (spaces, punctuation)
                 if (timing.char_start > lastEnd) {
                     html += escapeHtml(text.slice(lastEnd, timing.char_start));
                 }
@@ -802,7 +2146,6 @@
                 lastEnd = timing.char_end;
             });
 
-            // Add remaining text
             if (lastEnd < text.length) {
                 html += escapeHtml(text.slice(lastEnd));
             }
@@ -810,25 +2153,20 @@
             container.innerHTML = html;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
         function setupHighlighting(audio) {
             const words = document.querySelectorAll('.reader-text .word');
+            state.currentWordIndex = -1;
 
             function updateHighlight() {
-                const currentTime = audio.currentTime * 1000; // Convert to ms
+                const currentTime = audio.currentTime * 1000;
 
                 // Binary search for current word
                 let wordIndex = -1;
-                let low = 0, high = wordTimings.length - 1;
+                let low = 0, high = state.wordTimings.length - 1;
 
                 while (low <= high) {
                     const mid = Math.floor((low + high) / 2);
-                    const timing = wordTimings[mid];
+                    const timing = state.wordTimings[mid];
 
                     if (currentTime >= timing.start_ms && currentTime < timing.end_ms) {
                         wordIndex = mid;
@@ -840,59 +2178,203 @@
                     }
                 }
 
-                if (wordIndex !== currentWordIndex) {
-                    // Remove previous highlight
+                if (wordIndex !== state.currentWordIndex) {
+                    // Use requestAnimationFrame for smoother updates
                     words.forEach((w, i) => {
-                        w.classList.remove('speaking');
-                        if (i < wordIndex) {
-                            w.classList.add('spoken');
-                        } else {
-                            w.classList.remove('spoken');
-                        }
+                        w.classList.toggle('speaking', i === wordIndex);
+                        w.classList.toggle('spoken', i < wordIndex);
                     });
 
-                    // Add current highlight
+                    // Scroll into view with smooth behavior
                     if (wordIndex >= 0 && wordIndex < words.length) {
-                        words[wordIndex].classList.add('speaking');
-                        // Scroll into view
-                        words[wordIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const wordEl = words[wordIndex];
+                        const container = document.querySelector('.reader-container');
+                        const containerRect = container.getBoundingClientRect();
+                        const wordRect = wordEl.getBoundingClientRect();
+
+                        // Only scroll if word is outside the middle third of the container
+                        const containerMiddle = containerRect.top + containerRect.height / 2;
+                        const wordCenter = wordRect.top + wordRect.height / 2;
+
+                        if (Math.abs(wordCenter - containerMiddle) > containerRect.height / 4) {
+                            wordEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
                     }
 
-                    currentWordIndex = wordIndex;
+                    state.currentWordIndex = wordIndex;
                 }
 
                 if (!audio.paused && !audio.ended) {
-                    animationId = requestAnimationFrame(updateHighlight);
+                    state.animationId = requestAnimationFrame(updateHighlight);
                 }
             }
 
-            audio.addEventListener('play', () => {
-                animationId = requestAnimationFrame(updateHighlight);
+            // Remove existing listeners if any
+            const newAudio = audio.cloneNode(true);
+            audio.parentNode.replaceChild(newAudio, audio);
+            elements.readerAudio = newAudio;
+
+            newAudio.addEventListener('play', () => {
+                state.animationId = requestAnimationFrame(updateHighlight);
             });
 
-            audio.addEventListener('pause', () => {
-                if (animationId) cancelAnimationFrame(animationId);
+            newAudio.addEventListener('pause', () => {
+                if (state.animationId) cancelAnimationFrame(state.animationId);
             });
 
-            audio.addEventListener('ended', () => {
-                if (animationId) cancelAnimationFrame(animationId);
+            newAudio.addEventListener('ended', () => {
+                if (state.animationId) cancelAnimationFrame(state.animationId);
                 words.forEach(w => {
                     w.classList.remove('speaking');
                     w.classList.add('spoken');
                 });
+                updateProgressBar(100);
             });
 
-            audio.addEventListener('seeked', () => {
-                currentWordIndex = -1;
+            newAudio.addEventListener('seeked', () => {
+                state.currentWordIndex = -1;
                 words.forEach(w => {
                     w.classList.remove('speaking', 'spoken');
                 });
             });
         }
 
-        // Initialize
-        loadProviders();
-        loadMyBooks();
+        function setupProgressTracking(audio) {
+            audio.addEventListener('timeupdate', () => {
+                if (audio.duration) {
+                    const progress = (audio.currentTime / audio.duration) * 100;
+                    updateProgressBar(progress);
+                }
+            });
+        }
+
+        function updateProgressBar(progress) {
+            const progressBar = elements.chapterProgressBar;
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+                const progressContainer = progressBar.parentElement;
+                if (progressContainer) {
+                    progressContainer.setAttribute('aria-valuenow', Math.round(progress));
+                }
+            }
+        }
+
+        // =====================
+        // Utility Functions
+        // =====================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showStatus(element, message, type) {
+            if (!element) return;
+
+            element.textContent = message;
+            element.className = `status ${type}`;
+
+            if (type === 'loading') {
+                element.innerHTML = `<span class="spinner"></span> ${escapeHtml(message)}`;
+            } else if (type === 'success') {
+                element.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    ${escapeHtml(message)}
+                `;
+            }
+        }
+
+        function setButtonLoading(button, isLoading, text, iconHtml = '') {
+            button.disabled = isLoading;
+            if (isLoading) {
+                button.innerHTML = `<span class="spinner"></span> ${escapeHtml(text)}`;
+            } else {
+                button.innerHTML = iconHtml + escapeHtml(text);
+            }
+        }
+
+        // =====================
+        // Keyboard Shortcuts
+        // =====================
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Only handle shortcuts when not focused on input elements
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    return;
+                }
+
+                // Space to play/pause audio
+                if (e.key === ' ' && elements.readerAudio && elements.readerAudio.src) {
+                    e.preventDefault();
+                    if (elements.readerAudio.paused) {
+                        elements.readerAudio.play();
+                    } else {
+                        elements.readerAudio.pause();
+                    }
+                }
+
+                // Arrow left/right for seeking
+                if (e.key === 'ArrowLeft' && elements.readerAudio) {
+                    elements.readerAudio.currentTime = Math.max(0, elements.readerAudio.currentTime - 5);
+                }
+                if (e.key === 'ArrowRight' && elements.readerAudio) {
+                    elements.readerAudio.currentTime = Math.min(elements.readerAudio.duration, elements.readerAudio.currentTime + 5);
+                }
+            });
+        }
+
+        // =====================
+        // Event Listeners
+        // =====================
+        function initEventListeners() {
+            elements.synthesizeBtn.addEventListener('click', synthesizeSpeech);
+            document.getElementById('searchBtn').addEventListener('click', searchGutenberg);
+            document.getElementById('uploadBtn').addEventListener('click', uploadBook);
+            document.getElementById('backToLibrary').addEventListener('click', showLibrary);
+            document.getElementById('backToBook').addEventListener('click', showBook);
+            document.getElementById('generateChapterBtn').addEventListener('click', generateChapterAudio);
+            document.getElementById('prevChapterBtn').addEventListener('click', goToPrevChapter);
+            document.getElementById('nextChapterBtn').addEventListener('click', goToNextChapter);
+
+            // Search on Enter key
+            document.getElementById('gutenbergSearch').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    searchGutenberg();
+                }
+            });
+
+            // Synthesize on Ctrl+Enter
+            document.getElementById('text').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    synthesizeSpeech();
+                }
+            });
+        }
+
+        // =====================
+        // Initialization
+        // =====================
+        function init() {
+            initTabs();
+            initSpeedControls();
+            initEventListeners();
+            initKeyboardShortcuts();
+            loadProviders();
+            loadMyBooks();
+        }
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Make functions available globally for inline handlers
+        window.importBook = importBook;
+        window.openBook = openBook;
+        window.openChapter = openChapter;
+        window.handleBookItemKeydown = handleBookItemKeydown;
     </script>
 </body>
 </html>
