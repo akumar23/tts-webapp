@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from src.api.routes import health_router, tts_router
+from src.api.routes import health_router, tts_router, books_router
 from src.config import get_settings
 from src.utils.logging import setup_logging
 
@@ -51,6 +51,7 @@ Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 # Include routers
 app.include_router(health_router)
 app.include_router(tts_router)
+app.include_router(books_router)
 
 # Mount static files
 if STATIC_DIR.exists():

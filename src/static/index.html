@@ -17,13 +17,10 @@
             --error: #ef4444;
             --warning: #f59e0b;
             --border: #333;
+            --highlight: #ffeb3b;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -33,23 +30,13 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
 
         h1 {
@@ -61,24 +48,33 @@
             background-clip: text;
         }
 
-        .settings-btn {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            color: var(--text-primary);
-            cursor: pointer;
+        /* Tabs */
+        .tabs {
             display: flex;
-            align-items: center;
             gap: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
             transition: all 0.2s;
         }
 
-        .settings-btn:hover {
-            background: var(--border);
-        }
+        .tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .tab.active { color: var(--accent); background: var(--bg-secondary); border-bottom: 2px solid var(--accent); }
 
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
         .card {
             background: var(--bg-secondary);
             border-radius: 16px;
@@ -87,128 +83,20 @@
             border: 1px solid var(--border);
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
         .card-title {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-        }
-
-        .provider-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.75rem;
             margin-bottom: 1rem;
         }
 
-        .provider-card {
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
+        /* Form elements */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
 
-        .provider-card:hover {
-            border-color: var(--accent);
-        }
-
-        .provider-card.selected {
-            border-color: var(--accent);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .provider-card.needs-key {
-            opacity: 0.6;
-        }
-
-        .provider-card.needs-key.has-key {
-            opacity: 1;
-        }
-
-        .provider-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .provider-desc {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .provider-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            margin-top: 0.5rem;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        .badge-free {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .badge-api {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .badge-configured {
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--accent);
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: inherit;
-            resize: vertical;
-            transition: border-color 0.2s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .controls-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-        }
-
-        select, input[type="text"], input[type="password"] {
+        input, textarea, select {
             width: 100%;
             padding: 0.75rem 1rem;
             background: var(--bg-tertiary);
@@ -216,44 +104,15 @@
             border-radius: 8px;
             color: var(--text-primary);
             font-size: 0.95rem;
+            font-family: inherit;
         }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        textarea { min-height: 120px; resize: vertical; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
 
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+        .controls-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
 
-        input[type="range"] {
-            flex: 1;
-            -webkit-appearance: none;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--bg-tertiary);
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-        }
-
-        .speed-value {
-            min-width: 40px;
-            text-align: center;
-            font-weight: 600;
-            color: var(--accent);
-            font-size: 0.9rem;
-        }
-
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -266,239 +125,195 @@
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
-            width: 100%;
         }
 
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-full { width: 100%; }
+        .btn-small { padding: 0.5rem 1rem; font-size: 0.85rem; }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--accent-hover);
-        }
+        /* Provider grid */
+        .provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .audio-player {
-            display: none;
-            margin-top: 1rem;
-            padding: 1rem;
+        .provider-card {
             background: var(--bg-tertiary);
-            border-radius: 10px;
-        }
-
-        .audio-player.visible {
-            display: block;
-        }
-
-        .audio-player audio {
-            width: 100%;
-        }
-
-        .audio-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.75rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .status {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
             text-align: center;
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            display: none;
-            font-size: 0.9rem;
         }
 
+        .provider-card:hover { border-color: var(--accent); }
+        .provider-card.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        .provider-name { font-weight: 600; margin-bottom: 0.25rem; }
+        .provider-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .provider-badge { display: inline-block; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; text-transform: uppercase; font-weight: 600; }
+        .badge-free { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+
+        /* Speed control */
+        .speed-control { display: flex; align-items: center; gap: 0.75rem; }
+        input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: var(--bg-tertiary); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+        .speed-value { min-width: 40px; text-align: center; font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+
+        /* Audio player */
+        .audio-player { display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 10px; }
+        .audio-player.visible { display: block; }
+        .audio-player audio { width: 100%; }
+
+        /* Status */
+        .status { text-align: center; padding: 0.75rem; border-radius: 8px; margin-top: 1rem; display: none; font-size: 0.9rem; }
         .status.loading { display: block; background: rgba(99, 102, 241, 0.1); color: var(--accent); }
         .status.error { display: block; background: rgba(239, 68, 68, 0.1); color: var(--error); }
         .status.success { display: block; background: rgba(34, 197, 94, 0.1); color: var(--success); }
 
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid currentColor;
-            border-right-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.75s linear infinite;
-        }
-
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.75s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
+        /* Book Reader Styles */
+        .search-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+        .search-row input { flex: 1; }
 
-        .modal-overlay.visible {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-        }
-
-        .modal-header {
+        .book-list { display: grid; gap: 0.75rem; }
+        .book-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1.5rem;
-            line-height: 1;
-        }
-
-        .api-key-section {
-            margin-bottom: 1.5rem;
             padding: 1rem;
             background: var(--bg-tertiary);
             border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .book-item:hover { background: var(--border); }
+        .book-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+        .book-info p { font-size: 0.85rem; color: var(--text-secondary); }
+        .book-meta { text-align: right; font-size: 0.8rem; color: var(--text-secondary); }
 
-        .api-key-header {
+        .chapter-list { display: grid; gap: 0.5rem; max-height: 300px; overflow-y: auto; }
+        .chapter-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chapter-item:hover { background: var(--border); }
+        .chapter-item.active { border-left: 3px solid var(--accent); }
+        .chapter-item.completed { border-left: 3px solid var(--success); }
+        .chapter-title { font-weight: 500; }
+        .chapter-words { font-size: 0.8rem; color: var(--text-secondary); }
+
+        /* Karaoke Reader */
+        .reader-container {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        .api-key-title {
-            font-weight: 600;
+        .reader-text {
+            font-size: 1.2rem;
+            line-height: 2;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        .api-key-link {
-            font-size: 0.8rem;
-            color: var(--accent);
-            text-decoration: none;
+        .reader-text .word {
+            display: inline;
+            transition: background-color 0.1s, color 0.1s;
+            border-radius: 3px;
+            padding: 0 2px;
         }
 
-        .api-key-input-group {
-            display: flex;
-            gap: 0.5rem;
+        .reader-text .word.speaking {
+            background-color: var(--highlight);
+            color: #000;
         }
 
-        .api-key-input-group input {
-            flex: 1;
-        }
-
-        .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border-radius: 6px;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-            border: none;
-        }
-
-        .btn-danger {
-            background: var(--error);
-            color: white;
-            border: none;
-        }
-
-        .key-status {
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-        }
-
-        .key-status.saved {
-            color: var(--success);
-        }
-
-        footer {
-            text-align: center;
-            padding: 1.5rem;
+        .reader-text .word.spoken {
             color: var(--text-secondary);
-            font-size: 0.85rem;
         }
 
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
+        .reader-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 10px;
         }
+
+        .reader-controls audio { flex: 1; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .back-btn:hover { color: var(--text-primary); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        footer { text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.85rem; }
+        footer a { color: var(--accent); text-decoration: none; }
 
         @media (max-width: 600px) {
             .container { padding: 1rem; }
             .controls-row { grid-template-columns: 1fr; }
-            .provider-grid { grid-template-columns: 1fr 1fr; }
+            .tabs { flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="logo">
-                <h1>Text to Speech</h1>
-            </div>
-            <button class="settings-btn" id="settingsBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-                Settings
-            </button>
+            <h1>Text to Speech</h1>
         </header>
 
-        <main>
-            <!-- Provider Selection -->
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="quick">Quick TTS</button>
+            <button class="tab" data-tab="books">Book Reader</button>
+        </div>
+
+        <!-- Quick TTS Tab -->
+        <div id="quick-tab" class="tab-content active">
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">TTS Provider</span>
-                </div>
-                <div class="provider-grid" id="providerGrid">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="card-title">TTS Provider</div>
+                <div class="provider-grid" id="providerGrid"></div>
             </div>
 
-            <!-- Text Input -->
             <div class="card">
                 <div class="form-group">
                     <label for="text">Enter Text</label>
-                    <textarea id="text" placeholder="Type or paste your text here...">Hello! Welcome to the multi-provider text-to-speech service. Choose a provider above and start generating speech.</textarea>
+                    <textarea id="text" placeholder="Type or paste your text here...">Hello! Welcome to the text-to-speech service.</textarea>
                 </div>
 
                 <div class="controls-row">
                     <div class="form-group">
                         <label for="voice">Voice</label>
-                        <select id="voice">
-                            <option value="">Loading...</option>
-                        </select>
+                        <select id="voice"><option value="">Loading...</option></select>
                     </div>
-
                     <div class="form-group">
                         <label for="format">Format</label>
                         <select id="format">
@@ -507,7 +322,6 @@
                             <option value="ogg">OGG</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label>Speed</label>
                         <div class="speed-control">
@@ -517,297 +331,568 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" id="synthesizeBtn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    Generate Speech
-                </button>
-
+                <button class="btn btn-primary btn-full" id="synthesizeBtn">Generate Speech</button>
                 <div class="status" id="status"></div>
-
                 <div class="audio-player" id="audioPlayer">
                     <audio id="audio" controls></audio>
-                    <div class="audio-meta">
-                        <span id="audioInfo"></span>
-                        <span id="processingTime"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Reader Tab -->
+        <div id="books-tab" class="tab-content">
+            <!-- Library View -->
+            <div id="library-view">
+                <div class="card">
+                    <div class="card-title">Search Project Gutenberg</div>
+                    <div class="search-row">
+                        <input type="text" id="gutenbergSearch" placeholder="Search for books (e.g., Pride and Prejudice, Sherlock Holmes)">
+                        <button class="btn btn-primary" id="searchBtn">Search</button>
+                    </div>
+                    <div id="searchResults" class="book-list"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Or Upload Your Own Text</div>
+                    <div class="form-group">
+                        <label for="uploadTitle">Book Title</label>
+                        <input type="text" id="uploadTitle" placeholder="My Book">
+                    </div>
+                    <div class="form-group">
+                        <label for="uploadText">Paste Book Text</label>
+                        <textarea id="uploadText" placeholder="Paste your book text here. Chapters will be detected automatically."></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="uploadBtn">Upload Book</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">My Books</div>
+                    <div id="myBooks" class="book-list">
+                        <div class="empty-state">No books yet. Search Gutenberg or upload your own text.</div>
                     </div>
                 </div>
             </div>
-        </main>
+
+            <!-- Book View -->
+            <div id="book-view" style="display: none;">
+                <div class="back-btn" id="backToLibrary">← Back to Library</div>
+                <div class="card">
+                    <h2 id="bookTitle" style="margin-bottom: 0.5rem;"></h2>
+                    <p id="bookAuthor" style="color: var(--text-secondary); margin-bottom: 1rem;"></p>
+                    <div class="card-title">Chapters</div>
+                    <div id="chapterList" class="chapter-list"></div>
+                </div>
+            </div>
+
+            <!-- Reader View -->
+            <div id="reader-view" style="display: none;">
+                <div class="back-btn" id="backToBook">← Back to Chapters</div>
+                <div class="card">
+                    <h3 id="chapterTitle" style="margin-bottom: 0.5rem;"></h3>
+                    <p id="chapterInfo" style="color: var(--text-secondary); font-size: 0.85rem;"></p>
+                </div>
+
+                <div class="card" id="readerCard">
+                    <div id="synthesizePrompt">
+                        <p style="margin-bottom: 1rem;">Generate audio to start reading with synchronized highlighting.</p>
+                        <div class="controls-row" style="margin-bottom: 1rem;">
+                            <div class="form-group">
+                                <label>Voice</label>
+                                <select id="readerVoice"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Speed</label>
+                                <div class="speed-control">
+                                    <input type="range" id="readerSpeed" min="0.5" max="2" step="0.1" value="1">
+                                    <span class="speed-value" id="readerSpeedValue">1.0x</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-full" id="generateChapterBtn">Generate Audio</button>
+                        <div class="status" id="readerStatus"></div>
+                    </div>
+
+                    <div id="readerContent" style="display: none;">
+                        <div class="reader-container">
+                            <div class="reader-text" id="readerText"></div>
+                        </div>
+                        <div class="reader-controls">
+                            <audio id="readerAudio" controls></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <footer>
-            <a href="/docs" target="_blank">API Docs</a> |
-            <a href="/v1/tts/providers" target="_blank">Providers</a>
+            <a href="/docs" target="_blank">API Docs</a>
         </footer>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title">API Settings</span>
-                <button class="modal-close" id="closeSettings">&times;</button>
-            </div>
-            <div id="apiKeySettings">
-                <!-- Populated by JS -->
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
-                API keys are stored locally in your browser and sent directly to the providers.
-            </p>
-        </div>
-    </div>
-
     <script>
-        const API_BASE = '';
-
         // State
         let providers = [];
         let selectedProvider = 'edge';
-        let apiKeys = JSON.parse(localStorage.getItem('tts_api_keys') || '{}');
+        let currentBook = null;
+        let currentChapter = null;
+        let wordTimings = [];
+        let currentWordIndex = -1;
+        let animationId = null;
 
         // Elements
-        const providerGrid = document.getElementById('providerGrid');
-        const voiceSelect = document.getElementById('voice');
-        const formatSelect = document.getElementById('format');
-        const speedInput = document.getElementById('speed');
-        const speedValue = document.getElementById('speedValue');
-        const textInput = document.getElementById('text');
-        const synthesizeBtn = document.getElementById('synthesizeBtn');
-        const status = document.getElementById('status');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const audio = document.getElementById('audio');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettings = document.getElementById('closeSettings');
-        const apiKeySettings = document.getElementById('apiKeySettings');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-        // Load providers
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+
+        // =====================
+        // Quick TTS Functions
+        // =====================
         async function loadProviders() {
-            try {
-                const response = await fetch(`${API_BASE}/v1/tts/providers`);
-                providers = await response.json();
-                renderProviders();
-                loadVoices();
-            } catch (error) {
-                console.error('Failed to load providers:', error);
-            }
+            const response = await fetch('/v1/tts/providers');
+            providers = await response.json();
+            renderProviders();
+            loadVoices();
+            loadReaderVoices();
         }
 
         function renderProviders() {
-            providerGrid.innerHTML = providers.map(p => {
-                const hasKey = !!apiKeys[p.id];
-                const needsKey = p.requires_api_key;
-                const isSelected = p.id === selectedProvider;
+            const grid = document.getElementById('providerGrid');
+            grid.innerHTML = providers.map(p => `
+                <div class="provider-card ${p.id === selectedProvider ? 'selected' : ''}" data-provider="${p.id}">
+                    <div class="provider-name">${p.name}</div>
+                    <div class="provider-desc">${p.description.split(' - ')[0]}</div>
+                    ${!p.requires_api_key ? '<span class="provider-badge badge-free">Free</span>' : ''}
+                </div>
+            `).join('');
 
-                let badge = '';
-                if (!needsKey) {
-                    badge = '<span class="provider-badge badge-free">Free</span>';
-                } else if (hasKey) {
-                    badge = '<span class="provider-badge badge-configured">Configured</span>';
-                } else {
-                    badge = '<span class="provider-badge badge-api">API Key</span>';
-                }
-
-                return `
-                    <div class="provider-card ${isSelected ? 'selected' : ''} ${needsKey ? 'needs-key' : ''} ${hasKey ? 'has-key' : ''}"
-                         data-provider="${p.id}">
-                        <div class="provider-name">${p.name}</div>
-                        <div class="provider-desc">${p.description.split(' - ')[0]}</div>
-                        ${badge}
-                    </div>
-                `;
-            }).join('');
-
-            // Add click handlers
             document.querySelectorAll('.provider-card').forEach(card => {
-                card.addEventListener('click', () => selectProvider(card.dataset.provider));
+                card.addEventListener('click', () => {
+                    selectedProvider = card.dataset.provider;
+                    renderProviders();
+                    loadVoices();
+                });
             });
         }
 
-        function selectProvider(providerId) {
-            const provider = providers.find(p => p.id === providerId);
-            if (provider?.requires_api_key && !apiKeys[providerId]) {
-                // Open settings if API key needed
-                openSettings();
-                return;
-            }
-
-            selectedProvider = providerId;
-            renderProviders();
-            loadVoices();
-        }
-
         async function loadVoices() {
-            try {
-                const apiKey = apiKeys[selectedProvider] || '';
-                const url = `${API_BASE}/v1/tts/voices?provider=${selectedProvider}${apiKey ? '&api_key=' + encodeURIComponent(apiKey) : ''}`;
-                const response = await fetch(url);
-                const voices = await response.json();
-
-                voiceSelect.innerHTML = voices.map((v, i) =>
-                    `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language}${v.gender ? ', ' + v.gender : ''})</option>`
-                ).join('');
-            } catch (error) {
-                voiceSelect.innerHTML = '<option value="">No voices available</option>';
-            }
+            const response = await fetch(`/v1/tts/voices?provider=${selectedProvider}`);
+            const voices = await response.json();
+            document.getElementById('voice').innerHTML = voices.map((v, i) =>
+                `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language})</option>`
+            ).join('');
         }
 
-        function openSettings() {
-            renderApiKeySettings();
-            settingsModal.classList.add('visible');
+        async function loadReaderVoices() {
+            const response = await fetch('/v1/tts/voices?provider=edge');
+            const voices = await response.json();
+            document.getElementById('readerVoice').innerHTML = voices.map((v, i) =>
+                `<option value="${v.id}" ${i === 0 ? 'selected' : ''}>${v.name} (${v.language})</option>`
+            ).join('');
         }
 
-        function closeSettingsModal() {
-            settingsModal.classList.remove('visible');
-        }
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = `${e.target.value}x`;
+        });
 
-        function renderApiKeySettings() {
-            apiKeySettings.innerHTML = providers
-                .filter(p => p.requires_api_key)
-                .map(p => {
-                    const hasKey = !!apiKeys[p.id];
-                    return `
-                        <div class="api-key-section">
-                            <div class="api-key-header">
-                                <span class="api-key-title">${p.name}</span>
-                                ${p.api_key_url ? `<a href="${p.api_key_url}" target="_blank" class="api-key-link">Get API Key →</a>` : ''}
-                            </div>
-                            <div class="api-key-input-group">
-                                <input type="password"
-                                       id="key-${p.id}"
-                                       placeholder="Enter API key..."
-                                       value="${apiKeys[p.id] || ''}">
-                                <button class="btn btn-small ${hasKey ? 'btn-danger' : 'btn-success'}"
-                                        onclick="${hasKey ? `removeKey('${p.id}')` : `saveKey('${p.id}')`}">
-                                    ${hasKey ? 'Remove' : 'Save'}
-                                </button>
-                            </div>
-                            ${hasKey ? '<div class="key-status saved">✓ Key saved</div>' : ''}
-                        </div>
-                    `;
-                }).join('');
-        }
+        document.getElementById('readerSpeed').addEventListener('input', (e) => {
+            document.getElementById('readerSpeedValue').textContent = `${e.target.value}x`;
+        });
 
-        function saveKey(providerId) {
-            const input = document.getElementById(`key-${providerId}`);
-            const key = input.value.trim();
-            if (key) {
-                apiKeys[providerId] = key;
-                localStorage.setItem('tts_api_keys', JSON.stringify(apiKeys));
-                renderApiKeySettings();
-                renderProviders();
-            }
-        }
+        document.getElementById('synthesizeBtn').addEventListener('click', async () => {
+            const text = document.getElementById('text').value.trim();
+            if (!text) return;
 
-        function removeKey(providerId) {
-            delete apiKeys[providerId];
-            localStorage.setItem('tts_api_keys', JSON.stringify(apiKeys));
-            renderApiKeySettings();
-            renderProviders();
-            if (selectedProvider === providerId) {
-                selectedProvider = 'edge';
-                renderProviders();
-                loadVoices();
-            }
-        }
-
-        // Synthesis
-        async function synthesize() {
-            const text = textInput.value.trim();
-            if (!text) {
-                showStatus('Please enter some text', 'error');
-                return;
-            }
-
-            const provider = providers.find(p => p.id === selectedProvider);
-            if (provider?.requires_api_key && !apiKeys[selectedProvider]) {
-                showStatus('API key required. Click Settings to configure.', 'error');
-                return;
-            }
-
-            synthesizeBtn.disabled = true;
-            synthesizeBtn.innerHTML = '<span class="spinner"></span> Generating...';
-            hideStatus();
-            audioPlayer.classList.remove('visible');
-
-            const startTime = performance.now();
+            const btn = document.getElementById('synthesizeBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Generating...';
+            status.className = 'status';
 
             try {
-                const response = await fetch(`${API_BASE}/v1/tts/synthesize`, {
+                const response = await fetch('/v1/tts/synthesize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        text: text,
+                        text,
                         provider: selectedProvider,
-                        voice: voiceSelect.value,
-                        speed: parseFloat(speedInput.value),
-                        format: formatSelect.value,
-                        api_key: apiKeys[selectedProvider] || null,
+                        voice: document.getElementById('voice').value,
+                        speed: parseFloat(document.getElementById('speed').value),
+                        format: document.getElementById('format').value,
                     }),
                 });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Synthesis failed');
-                }
+                if (!response.ok) throw new Error((await response.json()).detail);
 
                 const blob = await response.blob();
-                const audioUrl = URL.createObjectURL(blob);
-
-                const clientTime = ((performance.now() - startTime) / 1000).toFixed(2);
-                const duration = response.headers.get('X-Audio-Duration-Seconds') || '?';
-                const providerUsed = response.headers.get('X-Provider') || selectedProvider;
-
-                audio.src = audioUrl;
-                audioPlayer.classList.add('visible');
-
-                document.getElementById('audioInfo').textContent = `${duration}s • ${providerUsed}`;
-                document.getElementById('processingTime').textContent = `${clientTime}s`;
-
-                showStatus('Speech generated!', 'success');
-                audio.play().catch(() => {});
-
+                const audio = document.getElementById('audio');
+                audio.src = URL.createObjectURL(blob);
+                document.getElementById('audioPlayer').classList.add('visible');
+                audio.play();
+                status.textContent = 'Speech generated!';
+                status.className = 'status success';
             } catch (error) {
-                showStatus(error.message, 'error');
+                status.textContent = error.message;
+                status.className = 'status error';
             } finally {
-                synthesizeBtn.disabled = false;
-                synthesizeBtn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    Generate Speech
-                `;
+                btn.disabled = false;
+                btn.textContent = 'Generate Speech';
+            }
+        });
+
+        // =====================
+        // Book Reader Functions
+        // =====================
+        document.getElementById('searchBtn').addEventListener('click', searchGutenberg);
+        document.getElementById('uploadBtn').addEventListener('click', uploadBook);
+        document.getElementById('backToLibrary').addEventListener('click', showLibrary);
+        document.getElementById('backToBook').addEventListener('click', showBook);
+        document.getElementById('generateChapterBtn').addEventListener('click', generateChapterAudio);
+
+        async function searchGutenberg() {
+            const query = document.getElementById('gutenbergSearch').value.trim();
+            if (!query) return;
+
+            const results = document.getElementById('searchResults');
+            results.innerHTML = '<div class="empty-state"><span class="spinner"></span> Searching...</div>';
+
+            try {
+                const response = await fetch(`/v1/books/search?q=${encodeURIComponent(query)}`);
+                const books = await response.json();
+
+                if (books.length === 0) {
+                    results.innerHTML = '<div class="empty-state">No books found</div>';
+                    return;
+                }
+
+                results.innerHTML = books.slice(0, 10).map(book => `
+                    <div class="book-item" onclick="importBook('${book.id}')">
+                        <div class="book-info">
+                            <h3>${book.title}</h3>
+                            <p>${book.author}</p>
+                        </div>
+                        <div class="book-meta">${book.language.toUpperCase()}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                results.innerHTML = `<div class="empty-state" style="color: var(--error);">${error.message}</div>`;
             }
         }
 
-        function showStatus(message, type) {
-            status.textContent = message;
-            status.className = `status ${type}`;
+        async function importBook(gutenbergId) {
+            const results = document.getElementById('searchResults');
+            results.innerHTML = '<div class="empty-state"><span class="spinner"></span> Importing book...</div>';
+
+            try {
+                const response = await fetch(`/v1/books/import/${gutenbergId}`, { method: 'POST' });
+                if (!response.ok) throw new Error((await response.json()).detail);
+
+                results.innerHTML = '<div class="empty-state" style="color: var(--success);">Book imported!</div>';
+                loadMyBooks();
+            } catch (error) {
+                results.innerHTML = `<div class="empty-state" style="color: var(--error);">${error.message}</div>`;
+            }
         }
 
-        function hideStatus() {
-            status.className = 'status';
+        async function uploadBook() {
+            const title = document.getElementById('uploadTitle').value.trim() || 'Untitled';
+            const text = document.getElementById('uploadText').value.trim();
+            if (!text) return;
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Uploading...';
+
+            try {
+                const response = await fetch('/v1/books/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, text }),
+                });
+                if (!response.ok) throw new Error((await response.json()).detail);
+
+                document.getElementById('uploadTitle').value = '';
+                document.getElementById('uploadText').value = '';
+                loadMyBooks();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Upload Book';
+            }
         }
 
-        // Event listeners
-        speedInput.addEventListener('input', () => {
-            speedValue.textContent = `${speedInput.value}x`;
-        });
+        async function loadMyBooks() {
+            try {
+                const response = await fetch('/v1/books');
+                const books = await response.json();
 
-        synthesizeBtn.addEventListener('click', synthesize);
-        settingsBtn.addEventListener('click', openSettings);
-        closeSettings.addEventListener('click', closeSettingsModal);
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) closeSettingsModal();
-        });
+                const container = document.getElementById('myBooks');
+                if (books.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No books yet.</div>';
+                    return;
+                }
 
-        textInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') synthesize();
-        });
+                container.innerHTML = books.map(book => `
+                    <div class="book-item" onclick="openBook('${book.id}')">
+                        <div class="book-info">
+                            <h3>${book.title}</h3>
+                            <p>${book.author}</p>
+                        </div>
+                        <div class="book-meta">
+                            ${book.chapter_count} chapters<br>
+                            ${book.total_words.toLocaleString()} words
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load books:', error);
+            }
+        }
+
+        async function openBook(bookId) {
+            try {
+                const [bookRes, chaptersRes] = await Promise.all([
+                    fetch(`/v1/books/${bookId}`),
+                    fetch(`/v1/books/${bookId}/chapters`),
+                ]);
+
+                currentBook = await bookRes.json();
+                currentBook.chapters = await chaptersRes.json();
+
+                showBook();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function showLibrary() {
+            document.getElementById('library-view').style.display = 'block';
+            document.getElementById('book-view').style.display = 'none';
+            document.getElementById('reader-view').style.display = 'none';
+            currentBook = null;
+            currentChapter = null;
+        }
+
+        function showBook() {
+            document.getElementById('library-view').style.display = 'none';
+            document.getElementById('book-view').style.display = 'block';
+            document.getElementById('reader-view').style.display = 'none';
+
+            document.getElementById('bookTitle').textContent = currentBook.title;
+            document.getElementById('bookAuthor').textContent = `by ${currentBook.author}`;
+
+            document.getElementById('chapterList').innerHTML = currentBook.chapters.map(ch => `
+                <div class="chapter-item ${ch.audio_status === 'completed' ? 'completed' : ''}" onclick="openChapter('${ch.id}')">
+                    <span class="chapter-title">${ch.title}</span>
+                    <span class="chapter-words">${ch.word_count.toLocaleString()} words</span>
+                </div>
+            `).join('');
+        }
+
+        async function openChapter(chapterId) {
+            try {
+                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${chapterId}`);
+                currentChapter = await response.json();
+
+                document.getElementById('library-view').style.display = 'none';
+                document.getElementById('book-view').style.display = 'none';
+                document.getElementById('reader-view').style.display = 'block';
+
+                document.getElementById('chapterTitle').textContent = currentChapter.title;
+                document.getElementById('chapterInfo').textContent = `${currentChapter.word_count.toLocaleString()} words`;
+
+                // Check if audio already exists
+                if (currentChapter.audio_status === 'completed') {
+                    await loadChapterPlayback();
+                } else {
+                    document.getElementById('synthesizePrompt').style.display = 'block';
+                    document.getElementById('readerContent').style.display = 'none';
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function generateChapterAudio() {
+            const btn = document.getElementById('generateChapterBtn');
+            const status = document.getElementById('readerStatus');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Generating audio...';
+            status.className = 'status loading';
+            status.textContent = 'This may take a minute for long chapters...';
+
+            try {
+                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${currentChapter.id}/synthesize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice: document.getElementById('readerVoice').value,
+                        speed: parseFloat(document.getElementById('readerSpeed').value),
+                    }),
+                });
+
+                if (!response.ok) throw new Error((await response.json()).detail);
+
+                const result = await response.json();
+                wordTimings = result.timings;
+
+                await loadChapterPlayback();
+                status.className = 'status';
+            } catch (error) {
+                status.textContent = error.message;
+                status.className = 'status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Audio';
+            }
+        }
+
+        async function loadChapterPlayback() {
+            try {
+                const response = await fetch(`/v1/books/${currentBook.id}/chapters/${currentChapter.id}/playback`);
+                if (!response.ok) throw new Error('Playback data not available');
+
+                const playback = await response.json();
+                wordTimings = playback.timings;
+
+                // Prepare the reader text with word spans
+                prepareReaderText(currentChapter.text, wordTimings);
+
+                // Set up audio
+                const audio = document.getElementById('readerAudio');
+                audio.src = playback.audio_url;
+
+                document.getElementById('synthesizePrompt').style.display = 'none';
+                document.getElementById('readerContent').style.display = 'block';
+
+                // Set up highlighting
+                setupHighlighting(audio);
+            } catch (error) {
+                console.error('Failed to load playback:', error);
+            }
+        }
+
+        function prepareReaderText(text, timings) {
+            const container = document.getElementById('readerText');
+
+            if (!timings || timings.length === 0) {
+                container.textContent = text;
+                return;
+            }
+
+            // Build HTML with word spans
+            let html = '';
+            let lastEnd = 0;
+
+            timings.forEach((timing, index) => {
+                // Add any text before this word (spaces, punctuation)
+                if (timing.char_start > lastEnd) {
+                    html += escapeHtml(text.slice(lastEnd, timing.char_start));
+                }
+                html += `<span class="word" data-index="${index}">${escapeHtml(timing.word)}</span>`;
+                lastEnd = timing.char_end;
+            });
+
+            // Add remaining text
+            if (lastEnd < text.length) {
+                html += escapeHtml(text.slice(lastEnd));
+            }
+
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function setupHighlighting(audio) {
+            const words = document.querySelectorAll('.reader-text .word');
+
+            function updateHighlight() {
+                const currentTime = audio.currentTime * 1000; // Convert to ms
+
+                // Binary search for current word
+                let wordIndex = -1;
+                let low = 0, high = wordTimings.length - 1;
+
+                while (low <= high) {
+                    const mid = Math.floor((low + high) / 2);
+                    const timing = wordTimings[mid];
+
+                    if (currentTime >= timing.start_ms && currentTime < timing.end_ms) {
+                        wordIndex = mid;
+                        break;
+                    } else if (currentTime < timing.start_ms) {
+                        high = mid - 1;
+                    } else {
+                        low = mid + 1;
+                    }
+                }
+
+                if (wordIndex !== currentWordIndex) {
+                    // Remove previous highlight
+                    words.forEach((w, i) => {
+                        w.classList.remove('speaking');
+                        if (i < wordIndex) {
+                            w.classList.add('spoken');
+                        } else {
+                            w.classList.remove('spoken');
+                        }
+                    });
+
+                    // Add current highlight
+                    if (wordIndex >= 0 && wordIndex < words.length) {
+                        words[wordIndex].classList.add('speaking');
+                        // Scroll into view
+                        words[wordIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                    currentWordIndex = wordIndex;
+                }
+
+                if (!audio.paused && !audio.ended) {
+                    animationId = requestAnimationFrame(updateHighlight);
+                }
+            }
+
+            audio.addEventListener('play', () => {
+                animationId = requestAnimationFrame(updateHighlight);
+            });
+
+            audio.addEventListener('pause', () => {
+                if (animationId) cancelAnimationFrame(animationId);
+            });
+
+            audio.addEventListener('ended', () => {
+                if (animationId) cancelAnimationFrame(animationId);
+                words.forEach(w => {
+                    w.classList.remove('speaking');
+                    w.classList.add('spoken');
+                });
+            });
+
+            audio.addEventListener('seeked', () => {
+                currentWordIndex = -1;
+                words.forEach(w => {
+                    w.classList.remove('speaking', 'spoken');
+                });
+            });
+        }
 
         // Initialize
         loadProviders();
+        loadMyBooks();
     </script>
 </body>
 </html>

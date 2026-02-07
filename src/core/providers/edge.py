@@ -1,6 +1,8 @@
 """Edge TTS Provider - Microsoft's free neural TTS."""
 
 import tempfile
+from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -10,6 +12,24 @@ import soundfile as sf
 
 from src.api.schemas.tts import VoiceInfo
 from src.core.providers.base import TTSProvider, ProviderInfo
+
+
+@dataclass
+class WordTiming:
+    """Timing information for a single word."""
+    word: str
+    start_ms: float  # Start time in milliseconds
+    end_ms: float    # End time in milliseconds
+    char_start: int  # Character offset in original text
+    char_end: int    # Character end offset
+
+
+@dataclass
+class SynthesisResult:
+    """Result of synthesis with timing data."""
+    audio_data: bytes       # MP3 audio bytes
+    word_timings: list[WordTiming]
+    duration_ms: float
 
 
 EDGE_VOICES = {
@@ -130,3 +150,63 @@ class EdgeTTSProvider(TTSProvider):
 
     def get_voices(self, api_key: str | None = None) -> list[VoiceInfo]:
         return list(EDGE_VOICES.values())
+
+    async def synthesize_with_timing(
+        self,
+        text: str,
+        voice: str = "en-US-JennyNeural",
+        speed: float = 1.0,
+    ) -> SynthesisResult:
+        """
+        Synthesize text and extract word-level timing data.
+
+        Returns audio bytes and timing information for karaoke-style highlighting.
+        """
+        rate_percent = int((speed - 1.0) * 100)
+        rate = f"+{rate_percent}%" if rate_percent >= 0 else f"{rate_percent}%"
+
+        communicate = edge_tts.Communicate(text, voice, rate=rate)
+
+        audio_chunks: list[bytes] = []
+        word_timings: list[WordTiming] = []
+        char_position = 0
+        last_end_ms = 0.0
+
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_chunks.append(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                word = chunk["text"]
+                # Convert ticks to milliseconds (1 tick = 100 nanoseconds)
+                start_ms = chunk["offset"] / 10000
+                duration_ms = chunk["duration"] / 10000
+                end_ms = start_ms + duration_ms
+
+                # Find word position in original text
+                # Search from current position to handle repeated words
+                char_start = text.find(word, char_position)
+                if char_start == -1:
+                    # Fallback: search from beginning
+                    char_start = text.find(word)
+                if char_start == -1:
+                    # Word not found (punctuation or special case)
+                    char_start = char_position
+                char_end = char_start + len(word)
+                char_position = char_end
+
+                word_timings.append(WordTiming(
+                    word=word,
+                    start_ms=round(start_ms, 2),
+                    end_ms=round(end_ms, 2),
+                    char_start=char_start,
+                    char_end=char_end,
+                ))
+                last_end_ms = end_ms
+
+        audio_data = b"".join(audio_chunks)
+
+        return SynthesisResult(
+            audio_data=audio_data,
+            word_timings=word_timings,
+            duration_ms=last_end_ms,
+        )
