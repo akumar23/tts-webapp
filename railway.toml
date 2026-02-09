@@ -1,10 +1,7 @@
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
-
-[build.args]
-# Use the CPU runtime stage
-target = "runtime-cpu"
+dockerTarget = "runtime-cpu"
 
 [deploy]
 healthcheckPath = "/health"
