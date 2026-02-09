@@ -33,6 +33,7 @@ class SynthesisResult:
 
 
 EDGE_VOICES = {
+    # American English - Female
     "en-US-JennyNeural": VoiceInfo(
         id="en-US-JennyNeural",
         name="Jenny",
@@ -47,6 +48,21 @@ EDGE_VOICES = {
         gender="female",
         description="Professional and clear American voice",
     ),
+    "en-US-SaraNeural": VoiceInfo(
+        id="en-US-SaraNeural",
+        name="Sara",
+        language="en-US",
+        gender="female",
+        description="Cheerful young American voice",
+    ),
+    "en-US-MichelleNeural": VoiceInfo(
+        id="en-US-MichelleNeural",
+        name="Michelle",
+        language="en-US",
+        gender="female",
+        description="Warm and calm American voice",
+    ),
+    # American English - Male
     "en-US-GuyNeural": VoiceInfo(
         id="en-US-GuyNeural",
         name="Guy",
@@ -61,6 +77,14 @@ EDGE_VOICES = {
         gender="male",
         description="Professional American male voice",
     ),
+    "en-US-EricNeural": VoiceInfo(
+        id="en-US-EricNeural",
+        name="Eric",
+        language="en-US",
+        gender="male",
+        description="Authoritative American male voice",
+    ),
+    # British English - Female
     "en-GB-SoniaNeural": VoiceInfo(
         id="en-GB-SoniaNeural",
         name="Sonia",
@@ -68,6 +92,14 @@ EDGE_VOICES = {
         gender="female",
         description="Professional British female voice",
     ),
+    "en-GB-LibbyNeural": VoiceInfo(
+        id="en-GB-LibbyNeural",
+        name="Libby",
+        language="en-GB",
+        gender="female",
+        description="Friendly British female voice",
+    ),
+    # British English - Male
     "en-GB-RyanNeural": VoiceInfo(
         id="en-GB-RyanNeural",
         name="Ryan",
@@ -75,6 +107,7 @@ EDGE_VOICES = {
         gender="male",
         description="Professional British male voice",
     ),
+    # Australian English
     "en-AU-NatashaNeural": VoiceInfo(
         id="en-AU-NatashaNeural",
         name="Natasha",
@@ -82,12 +115,27 @@ EDGE_VOICES = {
         gender="female",
         description="Friendly Australian female voice",
     ),
+    "en-AU-WilliamNeural": VoiceInfo(
+        id="en-AU-WilliamNeural",
+        name="William",
+        language="en-AU",
+        gender="male",
+        description="Professional Australian male voice",
+    ),
+    # Indian English
     "en-IN-NeerjaNeural": VoiceInfo(
         id="en-IN-NeerjaNeural",
         name="Neerja",
         language="en-IN",
         gender="female",
         description="Clear Indian English female voice",
+    ),
+    "en-IN-PrabhatNeural": VoiceInfo(
+        id="en-IN-PrabhatNeural",
+        name="Prabhat",
+        language="en-IN",
+        gender="male",
+        description="Professional Indian English male voice",
     ),
 }
 

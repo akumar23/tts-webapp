@@ -1,25 +1,27 @@
 [project]
 name = "tts-service"
 version = "1.0.0"
-description = "Production-ready Text-to-Speech API using Kokoro"
+description = "Production-ready Text-to-Speech API with multi-provider support"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Your Name", email = "you@example.com" }]
-keywords = ["tts", "text-to-speech", "kokoro", "fastapi", "api"]
+keywords = ["tts", "text-to-speech", "edge-tts", "fastapi", "api"]
 
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
-    "kokoro>=0.3.0",
+    "edge-tts>=6.1.0",
+    "httpx>=0.26.0",
     "soundfile>=0.12.1",
     "numpy>=1.26.0",
     "aiofiles>=23.2.1",
     "python-multipart>=0.0.6",
     "prometheus-fastapi-instrumentator>=6.1.0",
     "structlog>=24.1.0",
+    "redis>=5.0.0",
 ]
 
 [project.optional-dependencies]

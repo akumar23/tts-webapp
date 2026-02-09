@@ -38,7 +38,7 @@ class GutenbergClient:
                 "languages": language,
                 "page": page,
             }
-            response = await self._client.get(f"{GUTENDEX_API}/books", params=params)
+            response = await self._client.get(f"{GUTENDEX_API}/books/", params=params)
             response.raise_for_status()
             data = response.json()
 
@@ -82,7 +82,7 @@ class GutenbergClient:
         """
         try:
             # First get book metadata
-            response = await self._client.get(f"{GUTENDEX_API}/books/{book_id}")
+            response = await self._client.get(f"{GUTENDEX_API}/books/{book_id}/")
             response.raise_for_status()
             metadata = response.json()
 

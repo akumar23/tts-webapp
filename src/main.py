@@ -11,6 +11,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from src.api.routes import health_router, tts_router, books_router
 from src.config import get_settings
+from src.core.cache import get_audio_cache
 from src.utils.logging import setup_logging
 
 # Static files directory
@@ -23,7 +24,12 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup and shutdown."""
     setup_logging(debug=settings.debug)
+    # Initialize cache
+    cache = get_audio_cache()
+    await cache.connect()
     yield
+    # Cleanup
+    await cache.disconnect()
 
 
 app = FastAPI(

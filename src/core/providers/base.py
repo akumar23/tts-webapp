@@ -1,25 +1,24 @@
 """Base TTS Provider interface."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import AsyncGenerator
 
 import numpy as np
+from pydantic import BaseModel, Field
 
 from src.api.schemas.tts import VoiceInfo
 
 
-@dataclass
-class ProviderInfo:
+class ProviderInfo(BaseModel):
     """Information about a TTS provider."""
 
-    id: str
-    name: str
-    description: str
-    requires_api_key: bool
-    api_key_url: str | None = None
-    is_local: bool = False
-    supports_streaming: bool = True
+    id: str = Field(description="Provider identifier")
+    name: str = Field(description="Provider display name")
+    description: str = Field(description="Provider description")
+    requires_api_key: bool = Field(description="Whether API key is required")
+    api_key_url: str | None = Field(default=None, description="URL to get API key")
+    is_local: bool = Field(default=False, description="Whether provider runs locally")
+    supports_streaming: bool = Field(default=True, description="Whether streaming is supported")
 
 
 class TTSProvider(ABC):

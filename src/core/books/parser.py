@@ -10,6 +10,45 @@ from src.api.schemas.books import Chapter, ChapterStatus
 
 logger = structlog.get_logger(__name__)
 
+
+def normalize_text_for_tts(text: str) -> str:
+    """
+    Normalize text for natural TTS reading.
+
+    - Converts single line breaks to spaces (wrapped lines)
+    - Preserves paragraph breaks (double line breaks) as single breaks
+    - Cleans up excessive whitespace
+    - Removes odd characters that cause pauses
+    """
+    # Replace Windows line endings
+    text = text.replace("\r\n", "\n")
+
+    # Preserve paragraph breaks by replacing double+ newlines with placeholder
+    text = re.sub(r"\n\s*\n+", "\n\n", text)  # Normalize multiple blank lines
+    text = text.replace("\n\n", " <PARA> ")
+
+    # Replace single newlines with spaces (these are just wrapped lines)
+    text = text.replace("\n", " ")
+
+    # Restore paragraph breaks with a period for natural pause
+    text = text.replace(" <PARA> ", ". ")
+
+    # Clean up multiple spaces
+    text = re.sub(r" +", " ", text)
+
+    # Clean up multiple periods/punctuation
+    text = re.sub(r"\.+", ".", text)
+    text = re.sub(r"\. \.", ".", text)
+
+    # Remove underscores often used for emphasis in old texts
+    text = text.replace("_", "")
+
+    # Clean up quotes for better reading
+    text = text.replace('"', '"').replace('"', '"')
+    text = text.replace(''', "'").replace(''', "'")
+
+    return text.strip()
+
 # Chapter detection patterns
 CHAPTER_PATTERNS = [
     # "CHAPTER I", "CHAPTER 1", "CHAPTER ONE"

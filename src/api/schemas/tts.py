@@ -81,18 +81,6 @@ class VoiceInfo(BaseModel):
     description: Optional[str] = Field(default=None, description="Voice description")
 
 
-class ProviderInfoResponse(BaseModel):
-    """Information about a TTS provider."""
-
-    id: str = Field(description="Provider identifier")
-    name: str = Field(description="Provider display name")
-    description: str = Field(description="Provider description")
-    requires_api_key: bool = Field(description="Whether API key is required")
-    api_key_url: Optional[str] = Field(default=None, description="URL to get API key")
-    is_local: bool = Field(description="Whether provider runs locally")
-    supports_streaming: bool = Field(description="Whether streaming is supported")
-
-
 class OpenAISpeechRequest(BaseModel):
     """OpenAI-compatible speech request format."""
 

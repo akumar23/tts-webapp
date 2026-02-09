@@ -20,18 +20,19 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # TTS Configuration
-    tts_model: str = "edge-tts"
-    model_path: str = "./models"
     default_voice: str = "en-US-JennyNeural"
 
     # Audio Settings
     sample_rate: int = 24000
     default_format: Literal["wav", "mp3", "ogg"] = "mp3"
 
-    # Performance
+    # Limits
     max_text_length: int = 5000
+
+    # Cache (Redis)
     cache_enabled: bool = True
-    cache_ttl: int = 3600
+    redis_url: str = "redis://localhost:6379/0"
+    cache_ttl: int = 3600  # 1 hour default
 
     # Server
     host: str = "0.0.0.0"

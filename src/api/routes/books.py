@@ -22,7 +22,7 @@ from src.api.schemas.books import (
 )
 from src.config import Settings, get_settings
 from src.core.books.gutenberg import GutenbergClient
-from src.core.books.parser import ChapterParser
+from src.core.books.parser import ChapterParser, normalize_text_for_tts
 from src.core.books.store import BookStore, get_book_store
 from src.core.provider_manager import ProviderManager, get_provider_manager
 from src.core.providers.edge import EdgeTTSProvider
@@ -261,8 +261,11 @@ async def synthesize_chapter(
         edge_provider = EdgeTTSProvider()
         voice = request.voice or "en-US-JennyNeural"
 
+        # Normalize text for natural TTS reading flow
+        normalized_text = normalize_text_for_tts(chapter.text)
+
         result = await edge_provider.synthesize_with_timing(
-            text=chapter.text,
+            text=normalized_text,
             voice=voice,
             speed=request.speed,
         )
