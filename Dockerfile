@@ -57,10 +57,10 @@ RUN mkdir -p /app/models /app/cache
 # Expose port (Railway provides PORT env var)
 EXPOSE 8000
 
-# Health check
+# Health check (use fixed port since healthcheck runs inside container)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')" || exit 1
+    CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')\" || exit 1"]
 
-# Run application - use shell form to expand PORT env var
-CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Run application - explicit shell to ensure PORT env var expansion
+CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
