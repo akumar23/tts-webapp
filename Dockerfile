@@ -45,9 +45,11 @@ RUN pip install --no-cache-dir onnxruntime>=1.16.0
 # Copy application code
 COPY src/ ./src/
 COPY pyproject.toml .
+COPY start.sh .
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
+    chmod +x /app/start.sh && \
     chown -R appuser:appuser /app
 USER appuser
 
@@ -61,6 +63,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')\" || exit 1"]
 
-# Run application - explicit shell to ensure PORT env var expansion
-CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run application
+CMD ["/app/start.sh"]
 
